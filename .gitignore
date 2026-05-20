@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Lab artifacts (Burp project files, captured traffic, etc.)
+*.burp
+*.har
+*.pcap
+sessions/
+loot/
+
+# Local Docker volumes / state
+.docker-data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
