@@ -1,41 +1,70 @@
-# Week 12: XXE, File Upload, Path Traversal
+# Week 12: XXE, File Upload, and Path Traversal
 
 ## 🎯 What you'll learn
 
-Three related parser/filesystem bugs: XML External Entities, dangerous file uploads, and `../` path escapes.
+- Exploit **XML External Entity (XXE)** for file disclosure, SSRF, and blind data exfiltration
+- Bypass file-upload validation (extension, MIME type, magic-byte checks)
+- Recognize **path traversal** in URLs, filenames, and archive extraction (zip slip)
+- Walk an ImageMagick exploit (the "Image Tragick" class)
+- Design upload pipelines that are safe under adversarial input
 
 By the end of this week you'll be able to:
-- XXE for file disclosure and SSRF
-- File upload bypasses (extension, magic bytes, ImageMagick exploits)
-- Path traversal in archive extraction (zip slip)
-- Defenses: parser hardening, content-type allow-lists, randomized storage paths
+
+- Read XML-handling code and identify whether the parser fetches external entities
+- Build an upload that survives every common naive filter and reaches the storage layer
+- Detect path-traversal patterns even after various encodings
+- Architect an upload pipeline with content scanning + sandboxed processing
 
 ## ⚠️ Scope reminder
 
-**Run all labs locally or against the platforms listed.** Don't point any of these techniques at systems you don't own. See the root [readme.md](../readme.md#️-ethics--scope).
+**Lab only.** XXE can reach internal services (same risks as Week 08 SSRF). File-upload exploits can place real malware. See [root readme](../readme.md#️-ethics--scope).
 
 ## 🧰 Lab setup
 
-_Pending — Docker compose for a local vulnerable app, or PortSwigger Academy lab links, will go here._
+### Lab 1: PortSwigger Academy — XXE
+
+[9 XXE labs](https://portswigger.net/web-security/xxe). Recommended:
+
+1. ["Exploiting XXE using external entities to retrieve files"](https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-retrieve-files)
+2. ["Exploiting XXE to perform SSRF"](https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-perform-ssrf-attacks)
+3. ["Blind XXE with out-of-band interaction"](https://portswigger.net/web-security/xxe/blind/lab-blind-xxe-with-out-of-band-interaction)
+
+### Lab 2: PortSwigger Academy — File upload + path traversal
+
+- ["Remote code execution via web shell upload"](https://portswigger.net/web-security/file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload)
+- ["Web shell upload via Content-Type restriction bypass"](https://portswigger.net/web-security/file-upload/lab-file-upload-web-shell-upload-via-content-type-restriction-bypass)
+- ["File path traversal, simple case"](https://portswigger.net/web-security/file-path-traversal/lab-simple)
+
+### Lab 3: DVWA
+
+```bash
+docker run -d -p 80:80 vulnerables/web-dvwa
+```
+
+The "File Inclusion" and "File Upload" modules at low/medium/high difficulties.
 
 ## ✅ Your job
 
-1. **Spin up the lab.**
-2. **Try to exploit it yourself first** (30+ minutes minimum — the struggle is the learning).
-3. **Then open [attack.md](attack.md)** for the canonical walkthrough.
-4. **Read [defense.md](defense.md)** for detection, remediation, and secure-coding patterns.
+1. **Solve the XXE file-retrieval lab cold.** This is the simplest XXE pattern.
+2. **Solve the SSRF-via-XXE lab.** Same XXE primitive, different exfil destination.
+3. **Solve "Web shell upload via Content-Type restriction bypass."** Several layers of validation, each defeatable.
+4. **Solve "File path traversal, simple case."** Read the encoding tricks in [attack.md](attack.md).
+5. **Read [attack.md](attack.md).**
+6. **Read [defense.md](defense.md).**
 
 ## 📚 Required reading
 
-_Pending — curated reading list will go here._
+| Resource | Why | Time |
+|---|---|---|
+| [PortSwigger — XXE](https://portswigger.net/web-security/xxe) | Best overview | 45 min |
+| [PortSwigger — File upload vulnerabilities](https://portswigger.net/web-security/file-upload) | Best overview | 30 min |
+| [PortSwigger — Path traversal](https://portswigger.net/web-security/file-path-traversal) | The encoding catalog | 20 min |
+| [OWASP — XXE Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html) | Defense by language | 20 min |
+| [Snyk — Zip Slip](https://snyk.io/research/zip-slip-vulnerability) | The archive-extraction variant | 15 min |
 
 ## 💡 What you should already know
 
-- Comfort with HTTP and Burp Suite (see [Week 01](../week-01-http-and-burp/))
-- Whatever language/framework the lab uses (we keep this minimal)
-
----
-
-> 🚧 **This week is scaffolded.** Full content (lab setup, attack walkthrough, defense)
-> coming as the curriculum is written. See [Week 01](../week-01-http-and-burp/) for the
-> format your answer file will follow.
+- XML basics (elements, attributes, what a DTD is)
+- How HTTP file uploads work (multipart/form-data)
+- What an absolute vs. relative path is in Unix and Windows
+- That SSRF reachability matters here too (see [Week 08](../week-08-ssrf/))
