@@ -22,7 +22,7 @@ A piece of software ships with a default account so the operator can log in for 
 | Jenkins | None by default (newer) — but older installs had open `/script` | `/script` |
 | GitLab admin | `root:5iveL!fe` (pre-config) | `/users/sign_in` |
 | Grafana | `admin:admin` | `/login` |
-| MongoDB | No auth (pre-4.x default) | port 27017 |
+| MongoDB | No auth by default *if bound publicly* (pre-3.6 listened on 0.0.0.0; modern containers still bypass this if started with `-p 27017:27017`) | port 27017 |
 | Redis | No auth (default) | port 6379 |
 | Elasticsearch | No auth (until X-Pack) | port 9200 |
 | Kubernetes Dashboard | Token-required, but old configs had anonymous | Internal cluster IP |

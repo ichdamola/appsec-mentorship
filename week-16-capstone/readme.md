@@ -51,14 +51,12 @@ Choose ONE of:
 
 ### Templates
 
-In this directory:
+Fork these files in the [`templates/`](templates/) directory and fill them in:
 
-- `templates/dfd-template.md` — DFD scaffolding
-- `templates/stride-worksheet.md` — fillable STRIDE per component
-- `templates/attack-tree-template.md` — for high-value flows
-- `templates/threat-model-report.md` — final deliverable structure
-
-*(If those template files don't exist in your checkout, generate them from the examples in attack.md.)*
+- [`templates/dfd-template.md`](templates/dfd-template.md) — DFD scaffolding with the four STRIDE-correct primitives
+- [`templates/stride-worksheet.md`](templates/stride-worksheet.md) — fillable STRIDE per component, with severity/likelihood guides
+- [`templates/attack-tree-template.md`](templates/attack-tree-template.md) — attack-tree pattern for high-value goals
+- [`templates/threat-model-report.md`](templates/threat-model-report.md) — final deliverable structure with validation checklist
 
 ## ✅ Your job
 
@@ -84,7 +82,7 @@ In this directory:
 | [Microsoft — Threat Modeling tools and resources](https://learn.microsoft.com/en-us/security/engineering/threat-modeling) | The framework that gave us STRIDE | 30 min |
 | [OWASP — Threat Modeling Process](https://owasp.org/www-community/Threat_Modeling_Process) | Vendor-neutral overview | 30 min |
 | [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/) | A short, opinionated framing | 10 min |
-| ["Four Question Framework" — Shostack](https://www.threatmodelingmanifesto.org/) | What are we working on / what can go wrong / what are we going to do about it / did we do a good job | 5 min |
+| ["Four Question Framework" — Shostack](https://shostack.org/resources/threat-modeling) | What are we working on / what can go wrong / what are we going to do about it / did we do a good job | 5 min |
 
 ## 💡 What you should already know
 

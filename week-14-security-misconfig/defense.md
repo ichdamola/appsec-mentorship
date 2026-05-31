@@ -133,7 +133,7 @@ jobs:
       - name: Build
         run: docker build -t app:${{ github.sha }} .
       - name: Trivy filesystem
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0   # pin — same lesson as ":latest" above
         with:
           scan-type: image
           image-ref: app:${{ github.sha }}

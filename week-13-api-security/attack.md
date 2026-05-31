@@ -85,13 +85,15 @@ done
 UUIDs feel safer than integers but aren't. Recall Week 10: `uuid.uuid4()` is CSPRNG, but if the app uses `uuid.uuid1()` (timestamp-based) or any pseudo-random scheme, IDs are predictable.
 
 ```python
-# uuid1 leaks MAC + timestamp:
+# uuid1 leaks MAC + timestamp. Field layout (RFC 4122):
+#   time_low - time_mid - time_hi_and_version - clock_seq - node(MAC)
 >>> uuid.uuid1()
-UUID('a3f5b912-...-aabbccddeeff')
-#   ^^^^^^^^ time component   ^^^^^^^^^^^^^ host MAC
+UUID('1e6d5c80-1d8f-11ef-8c12-aabbccddeeff')
+#     ────────  ────  ────  ──── ────────────
+#     time_low  mid   hi    clk  node = host MAC (48 bits)
 ```
 
-Predictable IDs let you skip the enumeration: compute the next ID from the timestamp.
+The `time_*` fields encode 100-ns ticks since 1582-10-15 — given one UUID, you know the host's clock state. The `node` field is the host MAC (or a random one if the host doesn't expose one, depending on platform). See the [Python `uuid` module docs](https://docs.python.org/3/library/uuid.html). Predictable IDs let you skip enumeration: compute the next ID from the timestamp.
 
 ### Real-world BOLA
 
@@ -321,7 +323,11 @@ Same trick, different syntax. Disable batching unless you actually need it.
 
 ### Step 6: Mutations leaking via cache poisoning
 
-Apollo's automatic persisted queries (APQ) cache by hash. If access checks happen pre-cache but the cache key doesn't include the user, one user's authorized query becomes another user's served result. Audit your APQ config.
+Apollo's automatic persisted queries (APQ) cache *queries* by hash so clients can send a short hash instead of the full query text. That cache, by itself, is just a query lookup — not a response cache, and not a vulnerability.
+
+The danger appears when a team layers a **response cache** on top (Apollo's `responseCachePlugin`, a CDN edge cache in front of `/graphql`, or a custom Redis layer) and the cache key isn't scoped to the requesting user. One user's authorized response gets served to another user who replays the same APQ hash. The default Apollo server does not have this bug; custom response caches frequently do.
+
+Audit: search your codebase for `responseCachePlugin`, CDN cache rules in front of `/graphql`, or hand-rolled caches keyed only on query hash / variables. If user identity isn't in the cache key, it's exploitable.
 
 ## Part 5: BOLA in JWTs (API2)
 

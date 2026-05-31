@@ -104,6 +104,8 @@ Ship them to a remote system (your SIEM, an S3 bucket with immutability, a manag
 
 Here is the canonical first-pass library for the bug classes in weeks 1-14. Each rule names: signal, query (Sigma-ish pseudocode), expected false-positive rate, severity.
 
+> **Format note.** Most rules below use Sigma-ish pseudocode for readability — they describe the *logic*, not a copy-paste-into-Splunk SPL or production Sigma YAML. Field names, escape rules, and operators differ between SIEMs; treat these as the source for porting, not the artifact itself. One real Sigma YAML appears further down (the JNDI rule) so you have a concrete example of the actual on-disk format.
+
 ### Reflected/Stored XSS attempts (Weeks 01, 06)
 
 ```
@@ -193,6 +195,8 @@ severity: critical
 
 ### Log4Shell-pattern strings (Week 14)
 
+In Sigma-ish pseudocode:
+
 ```
 title: JNDI-substitution-pattern in any logged field
 detection:
@@ -201,17 +205,64 @@ fp_rate: vanishingly low
 severity: critical
 ```
 
+As real Sigma YAML (the on-disk artifact you'd commit to a detection-as-code repo) — this is what the rest of the rules in this section would look like once ported into your SIEM:
+
+```yaml
+title: Log4j JNDI substitution pattern in HTTP request
+id: 9c8d1f3a-c2d4-4f5e-b6a7-8e9f0a1b2c3d
+status: experimental
+description: |
+  Detects Log4Shell (CVE-2021-44228) and follow-on variants by matching the
+  ${jndi:…} / ${lower:…} / ${upper:…} / ${env:…} substitution patterns in
+  any HTTP request field (URI, headers, body). Vanishingly rare in legitimate
+  traffic.
+references:
+  - https://www.lunasec.io/docs/blog/log4j-zero-day/
+  - https://nvd.nist.gov/vuln/detail/CVE-2021-44228
+author: appsec-mentorship
+date: 2026/05/31
+logsource:
+  category: webserver
+detection:
+  selection:
+    '|all':
+      - '${jndi:'
+      - '${lower:'
+      - '${upper:'
+      - '${env:'
+      - '${sys:'
+      - '${date:'
+      - '${::-'
+  condition: 1 of selection
+fields:
+  - client_ip
+  - request_uri
+  - user_agent
+falsepositives:
+  - Vulnerability scanners running in scope
+  - Researchers documenting payloads
+level: critical
+tags:
+  - attack.initial_access
+  - attack.t1190
+  - cve.2021-44228
+```
+
+(`sigma-cli convert` turns this into Splunk SPL, Elastic EQL, Sentinel KQL, Chronicle YARA-L, etc. The point of writing it once in Sigma is that you don't re-port for each SIEM.)
+
 ### Deserialization payload signatures (Week 11)
 
 ```
 title: Known serialized payload header in HTTP body
 detection:
   query: where body_starts_with in
-    ("aced0005",   # Java
-     "\\x80\\x04\\x95",   # Pickle protocol 4
-     "rO0AB",      # Java base64
-     "AAEAAAD",    # .NET base64
-     "O:\\d+:\"") # PHP
+    ("aced0005",          # Java ObjectStream
+     "\\x80\\x03",         # Python pickle proto 3 (Python 3.0-3.7 default)
+     "\\x80\\x04",         # Python pickle proto 4 (Python 3.4+ default)
+     "\\x80\\x05",         # Python pickle proto 5 (Python 3.8+ default)
+     "rO0AB",             # Java serialized, base64-encoded
+     "AAEAAAD",           # .NET BinaryFormatter, base64-encoded
+     "O:\\d+:\"")          # PHP serialize() — "O:6:\"Object\":..."
 fp_rate: low — internal services may legitimately exchange Java-serialized data; allow-list
 severity: high
 ```

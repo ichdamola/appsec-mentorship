@@ -328,7 +328,12 @@ def test_login_rate_limited(client):
     assert 429 in statuses
 
 def test_graphql_depth_limit(client, user_token):
-    deep_query = "{" + "user { friends {" * 15 + "id" + "}}" * 15 + "}"
+    # Build a deeply nested but syntactically valid query:
+    # { user(id: 1) { friends { friends { friends { ... id } } } } }
+    inner = "id"
+    for _ in range(15):
+        inner = "friends { " + inner + " }"
+    deep_query = "{ user(id: 1) { " + inner + " } }"
     r = client.post("/graphql", json={"query": deep_query},
                     headers={"Authorization": f"Bearer {user_token}"})
     assert r.status_code == 400
