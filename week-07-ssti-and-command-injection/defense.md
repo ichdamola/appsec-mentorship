@@ -131,14 +131,16 @@ If the subprocess truly needs to run, give it the smallest possible privileges:
 ```python
 subprocess.run(
     ["nice", "-n", "19", "convert", input_path, output_path],
-    user="nobody",
-    group="nogroup",
+    user="nobody",      # Python 3.9+ only
+    group="nogroup",    # Python 3.9+ only
     cwd="/var/run/sandbox",
     env={"PATH": "/usr/bin"},
     timeout=30,
     capture_output=True
 )
 ```
+
+> ℹ️ `user=` and `group=` are Python 3.9+. On older runtimes, the production-grade pattern is to invoke a wrapper shell script via `sudo -u nobody` (with a tight sudoers rule) — `preexec_fn=os.setuid` works but has signal-handling caveats and is hard to get right.
 
 Better: containerize. Run the conversion in a single-purpose container with no network and a read-only filesystem outside the working directory.
 

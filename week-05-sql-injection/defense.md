@@ -145,6 +145,21 @@ direction = DIRECTION_MAP.get(user_input, "ASC")   # default safely
 cursor.execute(f"SELECT * FROM users ORDER BY name {direction}")
 ```
 
+For ORDER BY *column* — same pattern, but the allow-list is longer and you must hard-reject unknowns (silently defaulting on unknown columns confuses users and can hide bugs):
+
+```python
+ALLOWED_SORT_COLUMNS = {"name", "created_at", "email", "last_login"}
+DIRECTION_MAP = {"asc": "ASC", "desc": "DESC"}
+
+def list_users(sort_col: str, direction: str):
+    if sort_col not in ALLOWED_SORT_COLUMNS:
+        raise BadRequest(f"invalid sort column: {sort_col!r}")
+    direction = DIRECTION_MAP.get(direction.lower(), "ASC")
+    return db.execute(f"SELECT * FROM users ORDER BY {sort_col} {direction}")
+```
+
+The lesson: identifier injection has no "escape the value" shortcut. The allow-list IS the defense — and for column names specifically, fail loudly on unknown input rather than falling through to a default.
+
 ## Stored procedures — only sometimes a defense
 
 A stored procedure is parameterized **if and only if** it doesn't dynamically construct SQL internally:

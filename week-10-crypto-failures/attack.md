@@ -252,6 +252,12 @@ for guess in candidates:
 
 Across many runs, the guess with the longest matching prefix takes slightly longer. With enough samples and clean conditions, you derive the secret one character at a time.
 
+> ⚠️ **This is a teaching demo, not a viable exploit in pure Python.** Running the loop above against `vulnerable_compare` *in CPython* usually shows no timing signal — interpreter noise (GC pauses, attribute-lookup overhead, branch prediction) swamps the per-byte short-circuit difference.
+>
+> The real-world primitives are in compiled code: a constant-time bug in a C extension, a CPU side-channel like RIDL/MDS, or a shared L1 cache between attacker and victim VMs. Across the network, timing attacks against `==` are rarely viable; in shared-tenant cloud environments, sometimes they are.
+>
+> The defense (`hmac.compare_digest`) is correct regardless of whether you can reproduce the attack — the cost of using it is zero and the bug surface it closes is non-zero.
+
 ### Defense
 
 Use constant-time comparison:

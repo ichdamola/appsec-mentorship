@@ -49,7 +49,7 @@ Don't roll your own. Every modern framework ships one:
 
 | Framework | Use this |
 |---|---|
-| Django | `django.contrib.sessions` (default; rotate via `request.session.cycle_key()`) |
+| Django | `django.contrib.sessions` — **you must rotate manually after `auth.login()`.** Django's `auth.login()` rotates the CSRF token but *not* the session key; add `request.session.cycle_key()` immediately after `login()` to defeat session fixation. |
 | Rails | `ActionDispatch::Session::CookieStore` with signed encrypted cookies |
 | Express | `express-session` + a real store (Redis/DB), not the default `MemoryStore` |
 | Spring | `Spring Session` with `HttpSessionEventPublisher` for rotation |

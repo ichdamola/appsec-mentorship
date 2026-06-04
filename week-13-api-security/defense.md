@@ -40,6 +40,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 Now BOLA is impossible by construction in `OrderViewSet`: the query layer filters before the URL parameter is ever used. Any `pk` not in `request.user`'s orders returns 404.
 
+> 💡 This is the API-scale version of Week 03's "filter at the query layer" pattern. The DRF `get_queryset` override is just how Django REST Framework expresses **`Order.objects.filter(owner=request.user)`** at the ViewSet layer — same idea, different framework idiom. The principle ("scope by ownership before the URL parameter touches anything") is identical across stacks.
+
 Equivalent patterns:
 - **Rails:** Pundit policies — `Order.policy_scope(user)` returns the filtered queryset.
 - **Spring:** `@PreAuthorize("@orderService.isOwner(authentication, #id)")`.
@@ -320,12 +322,15 @@ def test_cannot_set_is_admin_via_profile_update(client, user_a):
     assert user_a.is_admin is False
 
 def test_login_rate_limited(client):
-    # 10 attempts fast — at least one should be rate-limited
-    statuses = []
-    for _ in range(10):
+    # Test the THRESHOLD, not "eventually 429s". With limit=5/minute,
+    # attempts 1-5 should 401 (bad password) and attempt 6 should 429.
+    # A test that just checks "429 in statuses" passes whether the limit
+    # is 5, 8, or 10 — it doesn't verify the configured policy.
+    for _ in range(5):
         r = client.post("/login", json={"email": "x@x.com", "password": "wrong"})
-        statuses.append(r.status_code)
-    assert 429 in statuses
+        assert r.status_code == 401, "rate limit hit too early"
+    r = client.post("/login", json={"email": "x@x.com", "password": "wrong"})
+    assert r.status_code == 429, "rate limit did not engage at attempt 6"
 
 def test_graphql_depth_limit(client, user_token):
     # Build a deeply nested but syntactically valid query:

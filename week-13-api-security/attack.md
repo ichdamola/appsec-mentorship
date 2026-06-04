@@ -85,15 +85,17 @@ done
 UUIDs feel safer than integers but aren't. Recall Week 10: `uuid.uuid4()` is CSPRNG, but if the app uses `uuid.uuid1()` (timestamp-based) or any pseudo-random scheme, IDs are predictable.
 
 ```python
-# uuid1 leaks MAC + timestamp. Field layout (RFC 4122):
-#   time_low - time_mid - time_hi_and_version - clock_seq - node(MAC)
+# uuid1 = high-res timestamp + node ID. Field layout (RFC 4122):
+#   time_low - time_mid - time_hi_and_version - clock_seq - node
 >>> uuid.uuid1()
 UUID('1e6d5c80-1d8f-11ef-8c12-aabbccddeeff')
 #     ────────  ────  ────  ──── ────────────
-#     time_low  mid   hi    clk  node = host MAC (48 bits)
+#     time_low  mid   hi    clk  node
 ```
 
-The `time_*` fields encode 100-ns ticks since 1582-10-15 — given one UUID, you know the host's clock state. The `node` field is the host MAC (or a random one if the host doesn't expose one, depending on platform). See the [Python `uuid` module docs](https://docs.python.org/3/library/uuid.html). Predictable IDs let you skip enumeration: compute the next ID from the timestamp.
+The `time_*` fields encode 100-ns ticks since 1582-10-15 — given one UUID, you know the host's clock state. The `node` field is **typically the host MAC**, but on platforms that don't expose one (some containers, locked-down hosts) CPython falls back to a random 48-bit node ID with the multicast bit set to indicate "this is not a real MAC."
+
+**Either way, uuid1 is not cryptographically random**: given a few outputs from the same host, the next one is highly predictable from the timestamp alone — regardless of whether the node leaks a MAC or just a stable random-per-process value. Don't use uuid1 for security-relevant identifiers. Use `uuid4()` (CSPRNG) or `secrets.token_urlsafe()`. See the [Python `uuid` module docs](https://docs.python.org/3/library/uuid.html). Predictable IDs let you skip enumeration: compute the next ID from the timestamp.
 
 ### Real-world BOLA
 

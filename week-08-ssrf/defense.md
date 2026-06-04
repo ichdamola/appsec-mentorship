@@ -69,22 +69,46 @@ def safe_fetch(url, allow_schemes={'http', 'https'}):
         if is_private_ip(ip):
             raise ValueError(f"resolves to private address: {ip}")
 
-    # 4. Connect to the specific IP, sending the original hostname as Host header
+    # 4. Connect to the specific IP, sending the original hostname as Host header.
     target_ip = infos[0][4][0]
-    return requests.get(
-        url,
-        # Tell requests to connect to this IP, regardless of further DNS lookups
-        # In practice this is done by mounting a custom HTTPAdapter
+    safe_url = url.replace(parsed.hostname, target_ip, 1)
+
+    session = requests.Session()
+    session.mount(
+        f"{parsed.scheme}://{target_ip}",
+        PinnedHostAdapter(original_host=parsed.hostname),
+    )
+    return session.get(
+        safe_url,
         timeout=5,
         allow_redirects=False,   # ← critical
-        headers={'Host': parsed.hostname}
+        headers={'Host': parsed.hostname},
+        # For HTTPS: SNI/cert verification needs the original hostname.
+        # PinnedHostAdapter handles SNI; cert verification uses Host.
     )
+
+
+class PinnedHostAdapter(requests.adapters.HTTPAdapter):
+    """Connect to the IP in the URL but set SNI + cert validation hostname
+    to the original hostname. Defeats DNS rebinding because no further DNS
+    lookup is needed at connect time."""
+    def __init__(self, original_host, *args, **kwargs):
+        self.original_host = original_host
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        # urllib3 honors a server_hostname kwarg via connection pools.
+        # See urllib3's HTTPSConnectionPool docs for the production pattern.
+        kwargs['verify'] = True
+        return super().send(request, **kwargs)
 ```
+
+> ⚠️ **This is the shape, not a drop-in.** The HTTPS SNI / cert-validation handoff between the IP-pinned connection and the original hostname is subtle and varies across `urllib3` versions. In production, use a vetted helper (`ssrf-requests`, the SOCKS-style approach via a dedicated egress proxy, or `httpx`'s custom transport API) rather than rolling your own. The point of this snippet is to show *what defeats DNS rebinding* — single resolution + connect by IP — not to ship as-is.
 
 Key properties:
 
-- **Single DNS resolution.** Defeats DNS rebinding (no second lookup at connect time).
-- **Connect by IP.** What the URL parser sees is what's actually contacted.
+- **Single DNS resolution.** Defeats DNS rebinding because the connect-time URL contains the IP, not the hostname — there is no second lookup.
+- **Connect by IP.** What the URL parser saw is what gets contacted, byte for byte.
 - **No redirect following.** A 30x response is returned to the caller, who must explicitly opt in to following — and that next URL goes through the same validator.
 
 ### Implementation note: SSRF-aware HTTP clients

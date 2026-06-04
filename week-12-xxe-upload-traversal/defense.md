@@ -139,7 +139,16 @@ def serve_file(key):
         abort(403)
 
     response = send_file(storage.get(f"uploads/{key}"))
-    response.headers["Content-Disposition"] = "attachment; filename=download"   # forces download dialog, not in-browser render
+
+    # RFC 6266 filename* encoding for the user-uploaded original name.
+    # urllib.parse.quote with safe="" escapes everything non-ASCII and any
+    # CR/LF — the latter is what blocks header injection if the stored
+    # filename contains a literal \r\n.
+    import urllib.parse
+    safe_name = urllib.parse.quote(file_record.original_name, safe="")
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename*=UTF-8''{safe_name}"
+    )
     response.headers["X-Content-Type-Options"] = "nosniff"                     # blocks MIME sniffing in browsers
     response.headers["Content-Type"] = "application/octet-stream"              # explicit + safe
     return response
@@ -219,19 +228,39 @@ This is the right architecture for any new feature. Path-based access exists in 
 
 ```python
 import os
+import stat
 from zipfile import ZipFile
 
 def safe_extract(zip_path, target_dir):
+    """Extract one entry at a time, re-validating after each write, refusing
+    symlink entries. The naive 'validate namelist then extractall' pattern is
+    broken — it doesn't account for symlink entries (zip carries Unix mode
+    bits and Python's zipfile extracts them as symlinks) or for TOCTOU between
+    validation and extraction."""
     target_dir = os.path.realpath(target_dir)
     with ZipFile(zip_path) as z:
-        for name in z.namelist():
-            destination = os.path.realpath(os.path.join(target_dir, name))
-            if not destination.startswith(target_dir + os.sep):
-                raise ValueError(f"unsafe path in archive: {name}")
-        z.extractall(target_dir)
+        for info in z.infolist():
+            # Reject symlinks. A zip can contain a symlink entry pointing at
+            # /etc/passwd followed by a file entry that writes "through" it.
+            # The namelist check sees both paths under target_dir; the writer
+            # follows the symlink and clobbers the host.
+            mode = info.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                raise ValueError(f"symlink in archive: {info.filename}")
+
+            destination = os.path.realpath(os.path.join(target_dir, info.filename))
+            if destination != target_dir and not destination.startswith(target_dir + os.sep):
+                raise ValueError(f"unsafe path in archive: {info.filename}")
+
+            # Extract this single entry. Re-checking realpath() per-write
+            # closes the TOCTOU window where an earlier-extracted directory
+            # introduces a symlink that the validation didn't see.
+            z.extract(info, target_dir)
 ```
 
 Same idea: pre-validate every entry. Don't trust the archive's metadata.
+
+> ⚠️ **Tarfiles**: Python 3.12+ ships `tarfile.extractall(..., filter='data')` which implements this hardening for you (CVE-2007-4559 hung around for 15 years before the stdlib fix). On 3.12+ use the filter; on older, use a vetted library. Don't reinvent.
 
 Most archive libraries now have a `safe_extractall` variant — check yours.
 

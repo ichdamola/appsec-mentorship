@@ -345,8 +345,14 @@ def test_enumeration_timing_uniform(client):
         client.post("/login", json={"email": "nobody@example.com", "password": "wrong"})
         t2.append(time.perf_counter() - s)
 
-    # Means within 10% of each other
-    assert abs(sum(t1)/len(t1) - sum(t2)/len(t2)) / max(t1+t2) < 0.10
+    # Means within 10% of each other.
+    # NOTE: `max(t1+t2)` (list concat → biggest single sample) makes this
+    # assertion meaningless — one GC spike inflates the denominator and the
+    # test always passes. Normalize against the smaller mean instead:
+    mean1, mean2 = sum(t1)/len(t1), sum(t2)/len(t2)
+    assert abs(mean1 - mean2) / min(mean1, mean2) < 0.10
+    # Treat this as a shape-test, not a statistical proof. For real timing
+    # regressions use pytest-benchmark with confidence intervals.
 
 def test_login_rate_limit(client):
     for _ in range(20):

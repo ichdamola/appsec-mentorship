@@ -24,7 +24,13 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_BROWSER_XSS_FILTER = True
+# SECURE_BROWSER_XSS_FILTER intentionally NOT set (Django default is False).
+# The X-XSS-Protection header is deprecated and was the source of multiple
+# universal-XSS browser bugs in the IE/early-Chrome era. Chrome 78+ removed
+# the feature; Firefox never supported it. OWASP and the Chromium team
+# recommend explicitly opting out via X-XSS-Protection: 0 (Django emits this
+# header only when the setting is explicitly True — leaving it False is the
+# safer default). The replacement is a strict CSP — see Week 06.
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 ```
@@ -46,8 +52,9 @@ spring:
     show-sql: false
 server:
   error:
-    include-stacktrace: never
-    include-message: never
+    include-stacktrace: never          # critical: never expose stack traces
+    include-message: on_param          # message is safe; expose on ?trace=true for ops
+    include-binding-errors: on_param   # field-level validation feedback for UX, opt-in
 ```
 
 ```javascript

@@ -102,21 +102,32 @@ ois.setObjectInputFilter(filter -> {
 
 Or set a global filter via `jdk.serialFilter` system property.
 
-### Python pickle — `find_class` restriction (limited)
+### Python pickle — don't. Switch to JSON.
+
+> ⚠️ **This section is for completeness; do not ship a `find_class` allow-list as your defense.** Pickle's `REDUCE` opcode lets an attacker craft payloads whose `__reduce__` returns `(allowed_callable, (attacker_iter,))` — the iterator can itself be a class call into anything else in the allow-list, and chains across allow-listed classes have been demonstrated. The right answer is: **change the data format to JSON** (or msgpack with no extension types, or protobuf). The format is the defense.
+
+If you absolutely cannot change the format, here is the minimal shape:
 
 ```python
+import pickle
+
+ALLOWED = frozenset({
+    # Only immutable primitives. Adding any class with side effects on
+    # construction (or with a __reduce__ that takes a callable) is a foothold.
+    ("builtins", "int"), ("builtins", "float"), ("builtins", "str"),
+    ("builtins", "tuple"), ("builtins", "frozenset"),
+})
+
 class SafeUnpickler(pickle.Unpickler):
     def find_class(self, module, name):
-        if (module, name) in [("collections", "OrderedDict"),
-                              ("builtins", "list"),
-                              ("builtins", "dict")]:
-            return getattr(__import__(module), name)
-        raise pickle.UnpicklingError(f"forbidden: {module}.{name}")
+        if (module, name) not in ALLOWED:
+            raise pickle.UnpicklingError(f"forbidden: {module}.{name}")
+        return getattr(__import__(module), name)
 
 SafeUnpickler(stream).load()
 ```
 
-**Caveat:** the safe-classes-only set is so small that you're almost always better off switching to JSON.
+Even this is research-territory: bypass papers exist for restrictive allow-lists when combined with pickle's stack-machine semantics. The robust answer is still: **don't use pickle for data from outside the trust boundary.**
 
 ### .NET — drop BinaryFormatter
 

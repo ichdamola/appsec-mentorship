@@ -225,7 +225,7 @@ logsource:
   category: webserver
 detection:
   selection:
-    '|all':
+    request_uri|contains:
       - '${jndi:'
       - '${lower:'
       - '${upper:'
@@ -233,7 +233,7 @@ detection:
       - '${sys:'
       - '${date:'
       - '${::-'
-  condition: 1 of selection
+  condition: selection
 fields:
   - client_ip
   - request_uri
@@ -257,8 +257,9 @@ title: Known serialized payload header in HTTP body
 detection:
   query: where body_starts_with in
     ("aced0005",          # Java ObjectStream
-     "\\x80\\x03",         # Python pickle proto 3 (Python 3.0-3.7 default)
-     "\\x80\\x04",         # Python pickle proto 4 (Python 3.4+ default)
+     "\\x80\\x02",         # Python pickle proto 2 (Python 2.3+ / py3 minimum)
+     "\\x80\\x03",         # Python pickle proto 3 (Python 3.0-3.3 default)
+     "\\x80\\x04",         # Python pickle proto 4 (Python 3.4-3.7 default)
      "\\x80\\x05",         # Python pickle proto 5 (Python 3.8+ default)
      "rO0AB",             # Java serialized, base64-encoded
      "AAEAAAD",           # .NET BinaryFormatter, base64-encoded

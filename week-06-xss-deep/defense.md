@@ -97,6 +97,8 @@ function safeHref(input) {
 }
 ```
 
+> ⚠️ **Never extend the allow-list with `data:`, `blob:`, `vbscript:`, or `file:`.** `data:text/html;base64,...` URLs carry full HTML+JS (this is the exact bypass the attack.md demos). `blob:` URLs from the same origin are equally dangerous in `<iframe src>`. `mailto:` made the list because it cannot carry script — that is the bar for adding a new scheme.
+
 ### Use a sanitizer for unavoidable `innerHTML`
 
 ```javascript
@@ -161,7 +163,7 @@ Content-Security-Policy:
   object-src 'none';
   base-uri 'none';
   require-trusted-types-for 'script';
-  trusted-types default;
+  trusted-types myPolicy;
   upgrade-insecure-requests;
   report-uri /csp-report
 ```

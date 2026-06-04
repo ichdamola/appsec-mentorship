@@ -55,7 +55,7 @@ In Burp:
 
 A vulnerable server reads `alg: none`, doesn't validate, accepts the claim. You're now admin.
 
-Modern JWT libraries default-reject `alg: none`. The PortSwigger "Unverified signature" lab is the canonical hands-on for this.
+Most modern JWT libraries reject `alg: none` *only if you pass an explicit `algorithms=` allow-list to `verify()`*. Many libraries' defaults — including `node-jsonwebtoken` <v9 — silently accepted `alg: none` in the recent past. The PortSwigger "Unverified signature" lab demonstrates this against real-world configurations. **Always pass `algorithms=['RS256']` (or whatever you actually expect) — don't rely on the default.**
 
 ### Attack 2: Flawed verification (no signature check)
 
@@ -94,11 +94,18 @@ The bug: a verification function that blindly applies the JWT's stated algorithm
 To exploit, you need the public key (often exposed at `/.well-known/jwks.json` or in TLS certs). Then:
 
 ```bash
-# Build a JWT with alg=HS256, sign with the public-key bytes as HMAC secret
-echo -n "$header.$payload" | openssl dgst -sha256 -hmac "$(cat public_key.pem)" -binary | base64url
+# Build a JWT with alg=HS256, sign with the public-key bytes as HMAC secret.
+# Note: `base64url` isn't standard; use openssl + tr to produce URL-safe base64.
+echo -n "$header.$payload" \
+  | openssl dgst -sha256 -hmac "$(cat public_key.pem)" -binary \
+  | openssl base64 | tr '+/' '-_' | tr -d '='
 ```
 
+> 💬 **In practice you usually need to try several encodings of the public key** — the PEM as-is, the PEM with the trailing newline trimmed, just the base64 body without headers, the raw DER, and what `cryptography.hazmat.primitives.serialization.public_bytes()` produces. Different verifier implementations hand different byte sequences to the HMAC. Script all five for an engagement.
+
 PortSwigger's "Algorithm confusion" lab walks through this in detail. **Read it; this attack still hits production code in 2026.**
+
+The same confusion has more variants: **RS256 ↔ ES256** (RSA public key reused as ECDSA verification key) and **RS256 ↔ EdDSA**. Fix is the same for all: explicit `algorithms=` allow-list naming exactly what the server expects, never reading `alg` from the JWT header.
 
 ### Attack 4: `kid` injection (path traversal in key lookup)
 

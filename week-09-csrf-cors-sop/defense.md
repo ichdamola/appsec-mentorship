@@ -325,6 +325,10 @@ def test_samesite_lax_on_session_cookie(client):
 | **csp-evaluator / cors-checker** | Browser extensions |
 | **Semgrep** | Rules for `cors(origin="*")`, weak CSRF token comparison, GET state changes |
 
+## Related: a correct CSP
+
+This week's defenses (CSRF tokens, SameSite, CORS allow-list) handle the cross-origin **request** problem. The cross-origin **script execution** problem (XSS) needs a strict Content-Security-Policy in addition — see Week 06's `script-src 'nonce-X' 'strict-dynamic'` recipe. The two layers stack: CORS controls "can this origin call my API," CSP controls "what code is allowed to run in my page." A CSP that just sets `script-src 'self'` will, for instance, break DOMPurify loaded from a CDN; the nonce + strict-dynamic recipe in Week 06 is the production-quality form.
+
 ## Common mistakes when defending
 
 - **Treating SameSite as the only defense.** Method-override bypass demolishes it.

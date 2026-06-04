@@ -90,7 +90,17 @@ If the server accepts `text/plain` and parses it as JSON anyway, you can submit 
 </form>
 ```
 
-The browser sends `Content-Type: text/plain` (no preflight); the body is the JSON shape the server expects. CSRF lands.
+How this works: `enctype="text/plain"` serializes each form field as `name=value\r\n`. The browser sends:
+
+```
+Content-Type: text/plain
+
+{"amount":10000,"to":"attacker_acct","_":"="}
+```
+
+Note the **literal `=`** between the input's `name=` and `value=` lands inside the string field `_`. That's intentional and load-bearing — the rest of the payload becomes valid JSON, with `"_": "="` as a junk field the server ignores. This only works if the server's JSON parser is lenient enough not to choke on the inserted equals.
+
+No CORS preflight fires because `text/plain` is a "simple request" content type. CSRF lands.
 
 #### Bypass: missing CORS preflight requirement
 

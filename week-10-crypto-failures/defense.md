@@ -206,6 +206,15 @@ plaintext = cipher.decrypt(nonce, ciphertext, associated_data=None)
 # Raises if MAC fails
 ```
 
+> ⚠️ **Nonce reuse with AES-GCM (or ChaCha20-Poly1305) is fatal.** Encrypting two messages with the same `(key, nonce)` pair leaks the XOR of the plaintexts AND lets an attacker forge arbitrary messages under that key — full integrity bypass, not just a confidentiality leak. With a 96-bit random nonce, birthday-collision probability hits ~50% around 2³⁶ messages: fine for short-lived sessions, dangerous for long-lived keys at high message volume.
+>
+> Three safer defaults when the message volume is high or the key is long-lived:
+> - **Counter-based nonces** (each side maintains a strict monotonic counter, sync via key derivation per session).
+> - **AES-GCM-SIV** (RFC 8452) — explicitly nonce-misuse-resistant.
+> - **XChaCha20-Poly1305** — 192-bit nonce extension, collision probability ~zero in any realistic regime.
+>
+> The Cloudflare 2017 lesson and several IPsec implementations hit this in production. The library accepting your nonce won't warn you.
+
 **Never use** AES-ECB, AES-CBC alone, RC4, DES, 3DES, MD5, SHA-1 for new code.
 
 ### Key management
