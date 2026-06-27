@@ -1,4 +1,4 @@
-# Week 07: Defense — Stopping SSTI & Command Injection
+# Week 07: Defense - Stopping SSTI & Command Injection
 
 You've turned both bug classes into RCE in [attack.md](attack.md). The defenses share a single principle.
 
@@ -6,27 +6,27 @@ You've turned both bug classes into RCE in [attack.md](attack.md). The defenses 
 
 ## The single rule
 
-> **User input is *data*. Never let it become *code* — neither template code nor shell code.**
+> **User input is *data*. Never let it become *code* - neither template code nor shell code.**
 
 For templates: pass user input as template variables (data), not as part of the template source (code).
 
 For commands: pass user input as arguments to a process executed without a shell, not as part of a string the shell parses.
 
-## SSTI — defenses
+## SSTI - defenses
 
 ### Rule 1: Never call `render_string` / `from_string` with user input
 
 The single most common SSTI pattern in real codebases:
 
 ```python
-# WRONG — user input becomes part of the template source
+# WRONG - user input becomes part of the template source
 template = f"Hello {name}!"
 return env.from_string(template).render()
 
-# RIGHT — name is a variable, the template is static
+# RIGHT - name is a variable, the template is static
 return env.from_string("Hello {{ name }}!").render(name=name)
 
-# BEST — the template is on disk, not constructed at runtime
+# BEST - the template is on disk, not constructed at runtime
 return render_template("greeting.html", name=name)
 ```
 
@@ -58,13 +58,13 @@ Even sandboxed engines have bypass histories. **Treat any template engine accept
 
 ### Rule 3: Auto-escape doesn't help
 
-Auto-escaping prevents *XSS* in the output — it escapes the *result* of evaluation. SSTI happens *during* evaluation, before any escaping. Auto-escape is orthogonal to SSTI defense.
+Auto-escaping prevents *XSS* in the output - it escapes the *result* of evaluation. SSTI happens *during* evaluation, before any escaping. Auto-escape is orthogonal to SSTI defense.
 
 ### Rule 4: Filter incoming HTML before storing it in templated contexts
 
 If user input ends up in a template variable that's later rendered, the variable substitution is safe. The risk is when *the template itself* incorporates user data. Keep templates and data separate at every layer.
 
-## Command injection — defenses
+## Command injection - defenses
 
 ### Rule 1: Never use `shell=True` with concatenated user input
 
@@ -95,7 +95,7 @@ The validation:
 
 - Restricts the alphabet (no spaces, no shell metas, no `-` to prevent argument injection)
 - Bounds the length
-- Uses `--` to terminate options (where supported by the tool) — anything after `--` is a positional argument, never a flag
+- Uses `--` to terminate options (where supported by the tool) - anything after `--` is a positional argument, never a flag
 
 ### Rule 3: Prefer the language API over the CLI
 
@@ -140,7 +140,7 @@ subprocess.run(
 )
 ```
 
-> ℹ️ `user=` and `group=` are Python 3.9+. On older runtimes, the production-grade pattern is to invoke a wrapper shell script via `sudo -u nobody` (with a tight sudoers rule) — `preexec_fn=os.setuid` works but has signal-handling caveats and is hard to get right.
+> ℹ️ `user=` and `group=` are Python 3.9+. On older runtimes, the production-grade pattern is to invoke a wrapper shell script via `sudo -u nobody` (with a tight sudoers rule) - `preexec_fn=os.setuid` works but has signal-handling caveats and is hard to get right.
 
 Better: containerize. Run the conversion in a single-purpose container with no network and a read-only filesystem outside the working directory.
 
@@ -247,7 +247,7 @@ def test_subprocess_called_without_shell(monkeypatch):
 | Tool | Role |
 |---|---|
 | **Burp Suite (Active Scan)** | Finds SSTI and command injection during crawl |
-| **tplmap** | SSTI exploitation framework (sqlmap for templates) — lab only |
+| **tplmap** | SSTI exploitation framework (sqlmap for templates) - lab only |
 | **Semgrep** | Static rules for `shell=True`, `from_string(`, `eval(` with non-literal arg |
 | **CodeQL** | Data-flow analysis catches source-to-sink paths for both classes |
 | **Bandit** (Python) | Detects `subprocess` with `shell=True` and similar patterns |
@@ -257,14 +257,14 @@ def test_subprocess_called_without_shell(monkeypatch):
 
 - **Filtering specific shell characters.** Bypasses are routine. Switch to list-form subprocess.
 - **Sandboxed Jinja2 as a hard guarantee.** It's defense in depth; assume RCE is possible.
-- **Auto-escape "fixes SSTI."** It doesn't — escape happens after evaluation.
+- **Auto-escape "fixes SSTI."** It doesn't - escape happens after evaluation.
 - **`--` saves you from all argument injection.** Tool-dependent. Some tools (Java's `Runtime.exec`) don't honor it. Allow-list inputs too.
 - **Trusting subprocess list form when one arg can include flags.** Always check arg [0] doesn't start with `-` if it's user-controlled.
 
 ## Going further
 
-- [PortSwigger — SSTI](https://portswigger.net/web-security/server-side-template-injection)
-- [PortSwigger — OS command injection](https://portswigger.net/web-security/os-command-injection)
-- [OWASP — Command Injection Defense Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html)
-- [PayloadsAllTheThings — SSTI](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Template%20Injection)
-- [GTFOBins](https://gtfobins.github.io/) — for every common Unix binary, the documented ways it can be abused (read in lab/CTF context)
+- [PortSwigger - SSTI](https://portswigger.net/web-security/server-side-template-injection)
+- [PortSwigger - OS command injection](https://portswigger.net/web-security/os-command-injection)
+- [OWASP - Command Injection Defense Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html)
+- [PayloadsAllTheThings - SSTI](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Template%20Injection)
+- [GTFOBins](https://gtfobins.github.io/) - for every common Unix binary, the documented ways it can be abused (read in lab/CTF context)

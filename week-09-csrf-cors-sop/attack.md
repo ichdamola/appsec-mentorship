@@ -1,10 +1,10 @@
-# Week 09: Attack walkthrough — CSRF, SameSite, SOP, and CORS
+# Week 09: Attack walkthrough - CSRF, SameSite, SOP, and CORS
 
 > ⚠️ **Lab only.**
 
 ---
 
-## The mental model — what crosses origins, and what doesn't
+## The mental model - what crosses origins, and what doesn't
 
 The browser's **Same-Origin Policy (SOP)** is the central trust boundary. Two pages from different origins (different scheme/host/port) can interact in limited ways:
 
@@ -33,7 +33,7 @@ The attacker hosts a page on `evil.example`. The victim, who has a valid session
 <script>document.getElementById('x').submit();</script>
 ```
 
-When the form submits, the browser attaches the victim's `bank.example` session cookie (because that's how cookies work — they're attached to requests *to* the cookie's origin, regardless of where the request came from). The bank sees an authenticated request and processes the transfer.
+When the form submits, the browser attaches the victim's `bank.example` session cookie (because that's how cookies work - they're attached to requests *to* the cookie's origin, regardless of where the request came from). The bank sees an authenticated request and processes the transfer.
 
 ### Step 1: Find a CSRF-able endpoint
 
@@ -45,7 +45,7 @@ Any state-changing action without CSRF protection:
 - Post a message, follow a user
 - Delete an account
 
-Endpoints to investigate first: anything that uses GET to change state (huge red flag — easily CSRF'd via `<img src>`), anything where the CSRF token field is missing or its value doesn't change per request.
+Endpoints to investigate first: anything that uses GET to change state (huge red flag - easily CSRF'd via `<img src>`), anything where the CSRF token field is missing or its value doesn't change per request.
 
 ### Step 2: Build the attacker page
 
@@ -72,7 +72,7 @@ If the endpoint accepts state changes via GET:
 <img src="https://bank.example/transfer?to=attacker&amount=10000">
 ```
 
-The browser fetches the "image," which is actually a state-changing request. Image loads silently — no popup, no console error. This is why **GET should never change state.**
+The browser fetches the "image," which is actually a state-changing request. Image loads silently - no popup, no console error. This is why **GET should never change state.**
 
 ### Step 4: JSON CSRF
 
@@ -98,13 +98,13 @@ Content-Type: text/plain
 {"amount":10000,"to":"attacker_acct","_":"="}
 ```
 
-Note the **literal `=`** between the input's `name=` and `value=` lands inside the string field `_`. That's intentional and load-bearing — the rest of the payload becomes valid JSON, with `"_": "="` as a junk field the server ignores. This only works if the server's JSON parser is lenient enough not to choke on the inserted equals.
+Note the **literal `=`** between the input's `name=` and `value=` lands inside the string field `_`. That's intentional and load-bearing - the rest of the payload becomes valid JSON, with `"_": "="` as a junk field the server ignores. This only works if the server's JSON parser is lenient enough not to choke on the inserted equals.
 
 No CORS preflight fires because `text/plain` is a "simple request" content type. CSRF lands.
 
 #### Bypass: missing CORS preflight requirement
 
-The endpoint accepts JSON without checking the `Content-Type` header — i.e., it's permissive about what content types it accepts:
+The endpoint accepts JSON without checking the `Content-Type` header - i.e., it's permissive about what content types it accepts:
 
 ```html
 <form action="https://api.example/charge" method="POST">
@@ -122,9 +122,9 @@ Server uses CSRF tokens, but defends them weakly:
 |---|---|
 | Token only validated on POST, not on GET | Use `<img src>` or change request to GET |
 | Token only validated if present | Submit form without the token field |
-| Token tied to nothing — globally valid | Get a token from your own account, paste into your CSRF form for victim |
+| Token tied to nothing - globally valid | Get a token from your own account, paste into your CSRF form for victim |
 | Token in cookie, validated via cookie (not header) | Browser auto-attaches cookie; "validation" is no-op |
-| Token in URL — readable from Referer | Leak token to attacker via a different vuln, then CSRF |
+| Token in URL - readable from Referer | Leak token to attacker via a different vuln, then CSRF |
 | Token verified via "starts with" | `?csrf=AAAA` matches any token starting with A (rare but happens) |
 
 PortSwigger has labs for each of these. Worth doing 2-3 to internalize how CSRF tokens fail.
@@ -140,11 +140,11 @@ if "bank.example" not in request.headers.get("Referer", ""):
 
 Bypasses:
 
-- **No `Referer` header at all:** browsers omit it when the source is HTTPS and the destination is HTTP, or when `<meta name="referrer" content="no-referrer">` is set on the source page. The check "is `bank.example` in `''`?" is false; rejected. **But:** the check sometimes is "if Referer is missing, allow" — common bug. PortSwigger lab.
+- **No `Referer` header at all:** browsers omit it when the source is HTTPS and the destination is HTTP, or when `<meta name="referrer" content="no-referrer">` is set on the source page. The check "is `bank.example` in `''`?" is false; rejected. **But:** the check sometimes is "if Referer is missing, allow" - common bug. PortSwigger lab.
 - **Trick the substring match:** `Referer: https://attacker.example/bank.example/foo` includes the string `bank.example`, passes substring match. Use proper URL parsing instead.
-- **Subdomain confusion:** the check accepts `Referer: https://bank.example.attacker.com/...` — `bank.example.` is a subdomain of `attacker.com`. Substring match passes.
+- **Subdomain confusion:** the check accepts `Referer: https://bank.example.attacker.com/...` - `bank.example.` is a subdomain of `attacker.com`. Substring match passes.
 
-## Part 2: SameSite — the modern partial defense
+## Part 2: SameSite - the modern partial defense
 
 ### How SameSite works
 
@@ -157,7 +157,7 @@ When `SameSite=Lax` or `SameSite=Strict` is set on a cookie:
 | `fetch()` cross-site | Cookie **not** sent | Cookie **not** sent |
 | Subresource (`<img>`, `<iframe>`) | Cookie **not** sent | Cookie **not** sent |
 
-**Lax** is the modern browser default. It mostly kills CSRF — form POSTs from other sites don't carry your session cookie.
+**Lax** is the modern browser default. It mostly kills CSRF - form POSTs from other sites don't carry your session cookie.
 
 **Strict** breaks the "I clicked a link from email and was logged in" UX. Used for very sensitive sites.
 
@@ -165,7 +165,7 @@ When `SameSite=Lax` or `SameSite=Strict` is set on a cookie:
 
 #### Bypass 1: Method override (Lax + GET)
 
-Lax sends cookies on top-level GET navigation. If the server accepts the same state-changing action via GET — or via method-override:
+Lax sends cookies on top-level GET navigation. If the server accepts the same state-changing action via GET - or via method-override:
 
 ```html
 <a href="https://bank.example/transfer?_method=POST&to=attacker&amount=10000">Click me</a>
@@ -177,7 +177,7 @@ PortSwigger's "SameSite Lax bypass via method override" lab.
 
 #### Bypass 2: Lax + 2-minute window after auth
 
-Some browsers (Chrome) implement a "Lax-Allow-Unsafe" mode for the first 2 minutes after a cookie is set — POSTs are allowed cross-origin. The pattern: trick the victim to log in, then immediately CSRF.
+Some browsers (Chrome) implement a "Lax-Allow-Unsafe" mode for the first 2 minutes after a cookie is set - POSTs are allowed cross-origin. The pattern: trick the victim to log in, then immediately CSRF.
 
 #### Bypass 3: Subdomain attacker
 
@@ -215,7 +215,7 @@ Access-Control-Allow-Origin: *
 Access-Control-Allow-Credentials: true
 ```
 
-This combination is **not allowed by the spec** (browsers reject) but some servers send it. Sometimes the browser is buggy or older. The intent is broken — wildcard is meant for public APIs that don't use credentials.
+This combination is **not allowed by the spec** (browsers reject) but some servers send it. Sometimes the browser is buggy or older. The intent is broken - wildcard is meant for public APIs that don't use credentials.
 
 ### Misconfiguration 2: Origin reflection
 
@@ -300,14 +300,14 @@ The CSRF/CORS family has expanded. Worth knowing the names even if defenses aren
 | **`Cross-Origin-Embedder-Policy` (COEP)** | Requires that all embedded resources opt in to being embedded |
 | **`Fetch Metadata Headers` (`Sec-Fetch-*`)** | Browser tells the server about the request's origin, mode, destination |
 
-Combined, these enable **Cross-Origin Isolation** — a stricter mode that lets your page use `SharedArrayBuffer` and similar high-precision timers safely. Increasingly required for performance-sensitive web apps.
+Combined, these enable **Cross-Origin Isolation** - a stricter mode that lets your page use `SharedArrayBuffer` and similar high-precision timers safely. Increasingly required for performance-sensitive web apps.
 
-For CSRF defense specifically, `Sec-Fetch-Site: same-origin` is a signal you can validate server-side — if a state-changing request doesn't have `Sec-Fetch-Site: same-origin` (or `same-site` for SameSite-relaxed flows), it's cross-origin.
+For CSRF defense specifically, `Sec-Fetch-Site: same-origin` is a signal you can validate server-side - if a state-changing request doesn't have `Sec-Fetch-Site: same-origin` (or `same-site` for SameSite-relaxed flows), it's cross-origin.
 
 ## Common mistakes when learning
 
 - **Conflating CSRF and CORS.** CSRF is about *making* requests; CORS is about *reading* responses.
-- **"SameSite Lax means I don't need CSRF tokens."** Almost true — until method-override or subdomain attacker bypasses.
+- **"SameSite Lax means I don't need CSRF tokens."** Almost true - until method-override or subdomain attacker bypasses.
 - **GET-CSRF as an afterthought.** State-changing GETs are a CSRF gift. They also leak via Referer.
 - **Trusting Referer alone.** Easy to omit, easy to confuse substring matches.
 - **Not testing the `null` origin.** It's the most-missed CORS misconfig.

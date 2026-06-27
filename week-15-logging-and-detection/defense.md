@@ -1,6 +1,6 @@
-# Week 15: Defense — Logging, Monitoring, and Detection
+# Week 15: Defense - Logging, Monitoring, and Detection
 
-In [attack.md](attack.md) you saw how attackers exploit log gaps. This week's defense is a *system*, not a code patch — structured logging, the right detection rules, and a sustainable alerting practice.
+In [attack.md](attack.md) you saw how attackers exploit log gaps. This week's defense is a *system*, not a code patch - structured logging, the right detection rules, and a sustainable alerting practice.
 
 ---
 
@@ -100,11 +100,11 @@ Ship them to a remote system (your SIEM, an S3 bucket with immutability, a manag
 
 **Immutability matters.** Use S3 Object Lock, or a write-only role to a tenancy the application can't read or delete. The forensic value of logs is precisely that they can't be edited after the fact.
 
-## Defense 3: Detection rules — the consolidated library
+## Defense 3: Detection rules - the consolidated library
 
 Here is the canonical first-pass library for the bug classes in weeks 1-14. Each rule names: signal, query (Sigma-ish pseudocode), expected false-positive rate, severity.
 
-> **Format note.** Most rules below use Sigma-ish pseudocode for readability — they describe the *logic*, not a copy-paste-into-Splunk SPL or production Sigma YAML. Field names, escape rules, and operators differ between SIEMs; treat these as the source for porting, not the artifact itself. One real Sigma YAML appears further down (the JNDI rule) so you have a concrete example of the actual on-disk format.
+> **Format note.** Most rules below use Sigma-ish pseudocode for readability - they describe the *logic*, not a copy-paste-into-Splunk SPL or production Sigma YAML. Field names, escape rules, and operators differ between SIEMs; treat these as the source for porting, not the artifact itself. One real Sigma YAML appears further down (the JNDI rule) so you have a concrete example of the actual on-disk format.
 
 ### Reflected/Stored XSS attempts (Weeks 01, 06)
 
@@ -112,7 +112,7 @@ Here is the canonical first-pass library for the bug classes in weeks 1-14. Each
 title: Possible XSS payload in request
 detection:
   condition: any_param_value matches "(?i)(<script|onerror=|onload=|javascript:|onmouseover=)"
-fp_rate: low (some legit fields can contain `<script` — code-sharing apps especially)
+fp_rate: low (some legit fields can contain `<script` - code-sharing apps especially)
 severity: medium
 ```
 
@@ -123,7 +123,7 @@ title: SQL injection payloads in request
 detection:
   condition: any_param_value matches "(?i)(union\\s+select|sleep\\(|benchmark\\(|or\\s+1=1|';\\s*drop)"
 fp_rate: low
-severity: high — investigate every IP that gets >5/day
+severity: high - investigate every IP that gets >5/day
 ```
 
 ### IDOR / BOLA enumeration (Weeks 03, 13)
@@ -133,8 +133,8 @@ title: User accessing many distinct IDs of a sensitive resource
 detection:
   query: stats dcount(resource_id) by user_id in 1h
   condition: dcount > 50
-fp_rate: medium — power users / admins legitimately access many resources
-severity: high — confirm against role
+fp_rate: medium - power users / admins legitimately access many resources
+severity: high - confirm against role
 ```
 
 ### Auth brute force, burst variant (Week 04)
@@ -144,7 +144,7 @@ title: Many failed logins from one IP
 detection:
   query: stats count by client_ip in 5min where event = "auth.login.failure"
   condition: count > 20
-fp_rate: medium — corporate NAT, password-manager misconfigs
+fp_rate: medium - corporate NAT, password-manager misconfigs
 severity: medium
 ```
 
@@ -178,7 +178,7 @@ title: App made outbound connection to RFC1918 / metadata IP
 detection:
   query: where dst_ip matches "(^127\\.|^10\\.|^192\\.168\\.|^172\\.(1[6-9]|2[0-9]|3[01])\\.|^169\\.254\\.)"
          and process_name in (web_application_processes)
-fp_rate: low — most apps don't make outbound calls to RFC1918
+fp_rate: low - most apps don't make outbound calls to RFC1918
 severity: critical
 ```
 
@@ -205,7 +205,7 @@ fp_rate: vanishingly low
 severity: critical
 ```
 
-As real Sigma YAML (the on-disk artifact you'd commit to a detection-as-code repo) — this is what the rest of the rules in this section would look like once ported into your SIEM:
+As real Sigma YAML (the on-disk artifact you'd commit to a detection-as-code repo) - this is what the rest of the rules in this section would look like once ported into your SIEM:
 
 ```yaml
 title: Log4j JNDI substitution pattern in HTTP request
@@ -263,8 +263,8 @@ detection:
      "\\x80\\x05",         # Python pickle proto 5 (Python 3.8+ default)
      "rO0AB",             # Java serialized, base64-encoded
      "AAEAAAD",           # .NET BinaryFormatter, base64-encoded
-     "O:\\d+:\"")          # PHP serialize() — "O:6:\"Object\":..."
-fp_rate: low — internal services may legitimately exchange Java-serialized data; allow-list
+     "O:\\d+:\"")          # PHP serialize() - "O:6:\"Object\":..."
+fp_rate: low - internal services may legitimately exchange Java-serialized data; allow-list
 severity: high
 ```
 
@@ -274,7 +274,7 @@ severity: high
 title: Privilege change recorded in user table
 detection:
   query: where event = "user.role.changed" and (new_role = "admin" or new_role = "staff")
-fp_rate: low — these should be very rare; alert on every one
+fp_rate: low - these should be very rare; alert on every one
 severity: critical
 ```
 
@@ -306,8 +306,8 @@ severity: high
 title: Large CSV / API bulk export
 detection:
   query: where event = "data.export" and record_count > 10000
-fp_rate: medium — depends on the product
-severity: medium — require review
+fp_rate: medium - depends on the product
+severity: medium - require review
 ```
 
 ### Detection-control failure
@@ -316,19 +316,19 @@ severity: medium — require review
 title: Logs not arriving from a host
 detection:
   query: where host in (production_hosts) and not seen in (logs) in 15min
-fp_rate: medium — hosts cycle, but should re-appear quickly
+fp_rate: medium - hosts cycle, but should re-appear quickly
 severity: critical if it persists
 ```
 
-## Defense 4: Alerting design — don't make people hate the SOC
+## Defense 4: Alerting design - don't make people hate the SOC
 
 ### The triage triangle
 
 For every detection rule, define:
 
-1. **Severity** — page-now / review-in-business-hours / aggregate-into-dashboard
-2. **Action** — what does the on-call do *immediately*?
-3. **Decision criteria** — when escalate?
+1. **Severity** - page-now / review-in-business-hours / aggregate-into-dashboard
+2. **Action** - what does the on-call do *immediately*?
+3. **Decision criteria** - when escalate?
 
 Without (2) and (3), high-severity alerts cause alert fatigue. The classic SRE alerting wisdom (Google's "Alerting on SLOs") applies: **only alert on conditions that require human action**.
 
@@ -361,10 +361,10 @@ When a detection becomes a *suspected incident*, the handoff to IR matters more 
 
 ### Required at handoff
 
-- **Timeline** — when did each signal fire? Auto-build from the SIEM data.
-- **Affected scope** — which users, which records, which systems?
-- **Containment options** — can we revoke a session? Kill an API key? Pause an account?
-- **Evidence preserved** — relevant log slices saved off-pipeline before retention rotates them out.
+- **Timeline** - when did each signal fire? Auto-build from the SIEM data.
+- **Affected scope** - which users, which records, which systems?
+- **Containment options** - can we revoke a session? Kill an API key? Pause an account?
+- **Evidence preserved** - relevant log slices saved off-pipeline before retention rotates them out.
 
 Practice this with tabletop exercises. The first time you discover that your "rotate the leaked API key" runbook is missing a step is during an incident; it's better to discover it during a tabletop in March.
 
@@ -378,9 +378,9 @@ Common minimal-team roles for the first 24 hours of a confirmed incident:
 | Investigator (Forensics) | Build the timeline; preserve evidence |
 | Operator (Containment) | Rotate, revoke, isolate, patch |
 | Comms | Status page, customer comms, legal/comms loop-in |
-| Scribe | Document the running narrative — critical for the postmortem |
+| Scribe | Document the running narrative - critical for the postmortem |
 
-Even in small orgs, one person can wear multiple hats — but they need to consciously switch contexts. Mixed signals about who's deciding are the most-common source of slow incidents.
+Even in small orgs, one person can wear multiple hats - but they need to consciously switch contexts. Mixed signals about who's deciding are the most-common source of slow incidents.
 
 ## Defense in depth
 
@@ -393,7 +393,7 @@ Even in small orgs, one person can wear multiple hats — but they need to consc
 | Quarterly rule review | Drift correction |
 | Threat-intel feed integration | New IoCs across deploys |
 | Tabletop exercises | IR readiness |
-| MITRE ATT&CK coverage map | Gap visibility — which TTPs are uncovered? |
+| MITRE ATT&CK coverage map | Gap visibility - which TTPs are uncovered? |
 
 ## Remediation playbook (when *logging* is the gap)
 
@@ -449,20 +449,20 @@ def test_request_id_propagates_across_events(client, capture_logs):
 
 ## Common mistakes when defending
 
-- **"We have Splunk"** — buying the SIEM is 5% of the work.
-- **"Log everything"** — verbose logs hide signal, cost money, and tempt people to log PII.
-- **Alerting on the symptom, not the threat** — "the API returned 500" isn't an attack; alert on the cause.
-- **No on-call practice** — quarterly tabletop is the actual training.
-- **Logs as cost center** — treat them as forensic evidence; retention budget is non-negotiable for regulated environments.
-- **Building rules without false-positive estimates** — rules with no estimated FP rate are how teams get alert fatigue.
-- **Pretending one team can do everything** — if the same person writes the rule, triages the alert, and patches the bug, none of the three get attention.
+- **"We have Splunk"** - buying the SIEM is 5% of the work.
+- **"Log everything"** - verbose logs hide signal, cost money, and tempt people to log PII.
+- **Alerting on the symptom, not the threat** - "the API returned 500" isn't an attack; alert on the cause.
+- **No on-call practice** - quarterly tabletop is the actual training.
+- **Logs as cost center** - treat them as forensic evidence; retention budget is non-negotiable for regulated environments.
+- **Building rules without false-positive estimates** - rules with no estimated FP rate are how teams get alert fatigue.
+- **Pretending one team can do everything** - if the same person writes the rule, triages the alert, and patches the bug, none of the three get attention.
 
 ## Going further
 
 - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
-- [Sigma rules repository](https://github.com/SigmaHQ/sigma) — read real rules
+- [Sigma rules repository](https://github.com/SigmaHQ/sigma) - read real rules
 - [MITRE ATT&CK](https://attack.mitre.org/) and [MITRE D3FEND](https://d3fend.mitre.org/)
-- [Google SRE — Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/)
-- [Florian Roth — Detection engineering blog](https://nextron-systems.com/blog/)
-- [Red Canary — Threat detection report](https://redcanary.com/threat-detection-report/)
-- [Mandiant M-Trends](https://www.mandiant.com/m-trends) — annual breach data
+- [Google SRE - Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/)
+- [Florian Roth - Detection engineering blog](https://nextron-systems.com/blog/)
+- [Red Canary - Threat detection report](https://redcanary.com/threat-detection-report/)
+- [Mandiant M-Trends](https://www.mandiant.com/m-trends) - annual breach data

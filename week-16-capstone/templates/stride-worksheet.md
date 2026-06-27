@@ -1,6 +1,6 @@
-# STRIDE Worksheet — `<system or feature name>`
+# STRIDE Worksheet - `<system or feature name>`
 
-> One row per threat. Fill in for every box and arrow in your DFD. "N/A — read-only static asset, no input" is a valid row; the discipline matters.
+> One row per threat. Fill in for every box and arrow in your DFD. "N/A - read-only static asset, no input" is a valid row; the discipline matters.
 
 ## STRIDE in one screen
 
@@ -13,7 +13,7 @@
 | **D**enial of service | Crashing / starving | Rate limits, scale, design |
 | **E**levation of privilege | Getting more rights | Authorization, least privilege |
 
-## Worksheet — one block per DFD component
+## Worksheet - one block per DFD component
 
 ### Component: `<App / DB / Cache / etc.>`
 

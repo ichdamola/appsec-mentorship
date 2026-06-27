@@ -1,4 +1,4 @@
-# Week 05: Attack walkthrough — SQL Injection
+# Week 05: Attack walkthrough - SQL Injection
 
 > ⚠️ **Lab only.**
 
@@ -181,7 +181,7 @@ The response doesn't show data and doesn't error verbosely. But it differs *beha
 
 Iterate through letters to find each character of `database()`. Slow, but it works.
 
-Burp Intruder + the cluster-bomb attack type automates this — wordlist of (position, letter) → confirm which combination returns the "true" response.
+Burp Intruder + the cluster-bomb attack type automates this - wordlist of (position, letter) → confirm which combination returns the "true" response.
 
 The PortSwigger "Conditional responses" lab is built around this.
 
@@ -210,7 +210,7 @@ Each request is slow by design, so you want short queries. Use binary search ins
 
 Cuts 26 attempts down to ~5 per character.
 
-## Step 6: Out-of-band (OAST) — when in-band is silent
+## Step 6: Out-of-band (OAST) - when in-band is silent
 
 A truly silent app can still leak via DNS or HTTP to a server you control:
 
@@ -234,7 +234,7 @@ Step 2: change password while logged in as alice
                                                                   ^^ from your stored row
 ```
 
-The second query, built by concatenating the stored username, runs without the rest of the WHERE clause — updates *every* user's password.
+The second query, built by concatenating the stored username, runs without the rest of the WHERE clause - updates *every* user's password.
 
 Often missed by scanners because the injection point and execution point are different requests, sometimes different services.
 
@@ -252,7 +252,7 @@ When the app or a WAF blocks obvious patterns:
 | Blocks single payloads | Stack with HTTP parameter pollution: `?id=1&id=2 UNION SELECT...` |
 | Strict allow-list at edge | Smuggle via JSON, XML, or header values that bypass URL-level filter |
 
-The PortSwigger "XML encoding" lab is the canonical exercise — the WAF doesn't decode XML entities, so `&#x55;NION SELECT` slips through.
+The PortSwigger "XML encoding" lab is the canonical exercise - the WAF doesn't decode XML entities, so `&#x55;NION SELECT` slips through.
 
 ## Step 9: sqlmap (in lab only)
 
@@ -274,13 +274,13 @@ sqlmap -r request.txt --batch
 
 Useful flags:
 
-- `--risk=3 --level=5` — try the noisier and more exhaustive payloads (slow)
-- `--tamper=space2comment` — built-in WAF-bypass tampers
-- `--proxy=http://127.0.0.1:8080` — route through Burp to log everything
+- `--risk=3 --level=5` - try the noisier and more exhaustive payloads (slow)
+- `--tamper=space2comment` - built-in WAF-bypass tampers
+- `--proxy=http://127.0.0.1:8080` - route through Burp to log everything
 
 **Don't run sqlmap against systems you don't own.** It generates large volumes of distinctive traffic and can corrupt data if it picks UPDATE/DELETE-based payloads.
 
-## Step 10: Modern flavors — NoSQL injection (preview)
+## Step 10: Modern flavors - NoSQL injection (preview)
 
 Same root cause, different syntax:
 
@@ -288,14 +288,14 @@ Same root cause, different syntax:
 { "user": "alice", "pass": {"$ne": null} }
 ```
 
-Mongo accepts `$ne` as "not equal to null" — matches any user where the password field exists. Login bypassed.
+Mongo accepts `$ne` as "not equal to null" - matches any user where the password field exists. Login bypassed.
 
 We don't go deep on NoSQL injection this week, but the *pattern* (user-controlled query operators) is the same. Same defense pattern too: don't accept query operators from user input.
 
 ## Common mistakes when learning
 
 - **Giving up after one quote returns no error.** Modern apps often suppress errors. Move to boolean probes.
-- **Forgetting that comment syntax differs by DB.** `--`, `#`, `/* */` — try all three.
+- **Forgetting that comment syntax differs by DB.** `--`, `#`, `/* */` - try all three.
 - **Skipping the column-count step.** UNION with wrong column count won't work; you'll think the endpoint isn't vulnerable.
 - **Running sqlmap as the first step.** You learn nothing. Manual first; sqlmap to scale.
 - **Not realizing integer parameters don't need quote breaking.** `?id=1 UNION SELECT...` works directly.

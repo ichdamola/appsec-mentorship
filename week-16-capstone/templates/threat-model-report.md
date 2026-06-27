@@ -1,4 +1,4 @@
-# Threat Model — `<system or feature name>`
+# Threat Model - `<system or feature name>`
 
 **Status:** `Draft | Active | Stale`
 **Authors:** `<eng lead>, <security partner>, <reviewers>`
@@ -14,7 +14,7 @@
 
 ### Out of scope
 
-<!-- Explicit. "Network-layer DDoS — covered by CDN vendor SLA." "Physical security of cloud DC — accepted." -->
+<!-- Explicit. "Network-layer DDoS - covered by CDN vendor SLA." "Physical security of cloud DC - accepted." -->
 
 ### Owners on call for this model
 
@@ -54,7 +54,7 @@ flowchart LR
 
 <!-- Link or paste from attack-tree-template.md. One tree per high-value goal. -->
 
-- Goal: `<...>` — see `attack-tree-<goal>.md`
+- Goal: `<...>` - see `attack-tree-<goal>.md`
 
 ## 4. Decisions
 
@@ -83,13 +83,13 @@ flowchart LR
 - [ ] `<question 1>`
 - [ ] `<question 2>`
 
-## 5. Validation — did we do a good job?
+## 5. Validation - did we do a good job?
 
 Check at the end of the modeling session:
 
 - [ ] Every DFD component appears in the STRIDE worksheet at least once (or has a written "N/A" reason).
 - [ ] Every threat row has a concrete component, not "the system."
-- [ ] Every Critical or High threat has a disposition (mitigated / action / accepted) — none are "TBD."
+- [ ] Every Critical or High threat has a disposition (mitigated / action / accepted) - none are "TBD."
 - [ ] Every action has an owner and a date.
 - [ ] At least one attack tree exists for the highest-value goal.
 - [ ] An engineer who didn't attend the session can read this report and understand the work.
@@ -99,7 +99,7 @@ Check at the end of the modeling session:
 - Architecture changes (new component, removed component, new third party)
 - Auth flow changes (new IDP, new permission model)
 - New regulated data domain (PII, payment, health)
-- After an incident — was the model right?
+- After an incident - was the model right?
 - 90 days, default
 
 ## 7. Change log
@@ -111,7 +111,7 @@ Check at the end of the modeling session:
 
 ---
 
-## Appendix — bug-class reference
+## Appendix - bug-class reference
 
 For pattern matching during STRIDE, see the curriculum's bug-class chapters:
 

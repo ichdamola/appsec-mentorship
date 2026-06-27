@@ -1,4 +1,4 @@
-# Week 10: Attack walkthrough — Cryptographic Failures
+# Week 10: Attack walkthrough - Cryptographic Failures
 
 > ⚠️ **Lab only.**
 
@@ -20,16 +20,16 @@ Or:
 hashed = md5(password)
 ```
 
-Both look like hashing. Both are broken — not because the hash algorithm itself is "broken" (SHA-256 is fine for general hashing), but because **password hashing has different requirements**.
+Both look like hashing. Both are broken - not because the hash algorithm itself is "broken" (SHA-256 is fine for general hashing), but because **password hashing has different requirements**.
 
 ### Why SHA-256 is wrong for passwords
 
 A password hash function should be:
 
-1. **Slow** — many milliseconds per hash, so brute force is expensive
-2. **Memory-hard** — resists GPU/ASIC parallelization
-3. **Salted** — same password by different users hashes differently
-4. **Tunable** — can increase cost as hardware gets faster
+1. **Slow** - many milliseconds per hash, so brute force is expensive
+2. **Memory-hard** - resists GPU/ASIC parallelization
+3. **Salted** - same password by different users hashes differently
+4. **Tunable** - can increase cost as hardware gets faster
 
 SHA-256 is none of these. A GPU computes ~10 billion SHA-256 hashes per second. bcrypt at cost factor 12 does ~100 hashes per second.
 
@@ -51,11 +51,11 @@ $ hashcat -a 0 -m 1400 hash.txt rockyou.txt
 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8:password
 ```
 
-For comparison — a bcrypt hash of `password` at cost 12 takes hashcat several days on the same hardware to brute-force from a list, and **effectively forever** to brute-force without a list.
+For comparison - a bcrypt hash of `password` at cost 12 takes hashcat several days on the same hardware to brute-force from a list, and **effectively forever** to brute-force without a list.
 
 The compute-time gap between SHA-256-of-password and bcrypt is the entire reason this matters.
 
-### Salted SHA-256 — still wrong
+### Salted SHA-256 - still wrong
 
 ```python
 hashed = hashlib.sha256((salt + password).encode()).hexdigest()
@@ -118,7 +118,7 @@ A specific attack pattern:
 
 1. Attacker requests a password reset for their own account. Gets token T1.
 2. Attacker requests a few more (different accounts they own, or via signup spam). Gets T2, T3, T4.
-3. With those four 32-character tokens (and the algorithm), the attacker can predict T5 — the next token issued.
+3. With those four 32-character tokens (and the algorithm), the attacker can predict T5 - the next token issued.
 4. Attacker requests reset for victim's account just after. The token they predicted *is* the victim's reset token. Take over.
 
 This is real. Tools like `randcrack` (Python) automate it for Mersenne Twister.
@@ -221,7 +221,7 @@ Python's `==` for strings short-circuits at the first mismatch. The comparison t
 | `cxxxxxxxxx` | `correctstr` | ~ns + tiny (first char matches, second differs) |
 | `coxxxxxxxx` | `correctstr` | ~ns + tinier |
 
-If the attacker can make many measurements with low noise, they can derive the expected string one character at a time — a **timing attack**.
+If the attacker can make many measurements with low noise, they can derive the expected string one character at a time - a **timing attack**.
 
 This is rarely exploitable over the internet (network jitter swamps the signal). It's much more exploitable:
 
@@ -229,7 +229,7 @@ This is rarely exploitable over the internet (network jitter swamps the signal).
 - Inside the same VM / container
 - Against side channels in shared CPU caches
 
-### Exploit (lab — local)
+### Exploit (lab - local)
 
 In Python (lab):
 
@@ -252,11 +252,11 @@ for guess in candidates:
 
 Across many runs, the guess with the longest matching prefix takes slightly longer. With enough samples and clean conditions, you derive the secret one character at a time.
 
-> ⚠️ **This is a teaching demo, not a viable exploit in pure Python.** Running the loop above against `vulnerable_compare` *in CPython* usually shows no timing signal — interpreter noise (GC pauses, attribute-lookup overhead, branch prediction) swamps the per-byte short-circuit difference.
+> ⚠️ **This is a teaching demo, not a viable exploit in pure Python.** Running the loop above against `vulnerable_compare` *in CPython* usually shows no timing signal - interpreter noise (GC pauses, attribute-lookup overhead, branch prediction) swamps the per-byte short-circuit difference.
 >
 > The real-world primitives are in compiled code: a constant-time bug in a C extension, a CPU side-channel like RIDL/MDS, or a shared L1 cache between attacker and victim VMs. Across the network, timing attacks against `==` are rarely viable; in shared-tenant cloud environments, sometimes they are.
 >
-> The defense (`hmac.compare_digest`) is correct regardless of whether you can reproduce the attack — the cost of using it is zero and the bug surface it closes is non-zero.
+> The defense (`hmac.compare_digest`) is correct regardless of whether you can reproduce the attack - the cost of using it is zero and the bug surface it closes is non-zero.
 
 ### Defense
 
@@ -303,13 +303,13 @@ Most modern code uses authenticated encryption (AES-GCM, ChaCha20-Poly1305), whi
 
 | Issue | Severity |
 |---|---|
-| Self-signed cert in production | Critical — disables cert validation |
-| TLS 1.0 / 1.1 still supported | High — multiple known weaknesses |
+| Self-signed cert in production | Critical - disables cert validation |
+| TLS 1.0 / 1.1 still supported | High - multiple known weaknesses |
 | Weak cipher suites (RC4, 3DES, NULL, EXPORT) | High |
-| Missing HSTS header | Medium — vulnerable to SSL strip |
+| Missing HSTS header | Medium - vulnerable to SSL strip |
 | Mixed content (HTTPS page loads HTTP resource) | Medium |
-| Expired or near-expiry certificate | Medium — outage risk |
-| Certificate validation disabled in client code | Critical — silent MITM |
+| Expired or near-expiry certificate | Medium - outage risk |
+| Certificate validation disabled in client code | Critical - silent MITM |
 
 The Mozilla SSL Configuration Generator gives you correct configs for nginx/Apache/HAProxy at three security levels (modern / intermediate / old).
 
@@ -329,7 +329,7 @@ The report grades the configuration A-F and explains every issue. In lab, run it
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
-`preload` opts you into the hard-coded list shipped with browsers. Once on, you can't easily get off — irreversible-ish commitment. But: catches first-visit (no prior HSTS header seen yet) protection.
+`preload` opts you into the hard-coded list shipped with browsers. Once on, you can't easily get off - irreversible-ish commitment. But: catches first-visit (no prior HSTS header seen yet) protection.
 
 ## Common mistakes when learning
 

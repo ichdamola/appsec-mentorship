@@ -1,4 +1,4 @@
-# Week 06: Defense — Stored & DOM XSS, CSP Bypass
+# Week 06: Defense - Stored & DOM XSS, CSP Bypass
 
 You've exploited stored XSS, DOM XSS, and walked around real CSPs. Now the layered defenses that make those attacks fail.
 
@@ -6,12 +6,12 @@ You've exploited stored XSS, DOM XSS, and walked around real CSPs. Now the layer
 
 ## The two single rules
 
-> 1. **Encode for the output context, always — same as Week 01.**
-> 2. **Add a strict CSP as defense in depth — because encoding sometimes gets missed.**
+> 1. **Encode for the output context, always - same as Week 01.**
+> 2. **Add a strict CSP as defense in depth - because encoding sometimes gets missed.**
 
-The fixes for stored XSS are the same as for reflected XSS at the rendering level. The fixes for DOM XSS are different — the data flow is client-side, so the defense is too.
+The fixes for stored XSS are the same as for reflected XSS at the rendering level. The fixes for DOM XSS are different - the data flow is client-side, so the defense is too.
 
-## Stored XSS — same defense as reflected, with one addition
+## Stored XSS - same defense as reflected, with one addition
 
 Stored XSS arises from the same root cause as reflected XSS: user input lands in a place where the browser parses it as code. The defense is the same context-aware encoding from [Week 01 defense.md](../week-01-http-and-burp/defense.md):
 
@@ -48,7 +48,7 @@ def save_comment(raw_html, user):
 | `HtmlSanitizer` | .NET |
 | `Loofah` / `Rails::Html::Sanitizer` | Ruby |
 
-**For plain-text fields, do nothing at storage — escape at render.** Sanitizing plain text creates "what did the sanitizer do to my input?" bugs (e.g., the user's name shows up as different on each page).
+**For plain-text fields, do nothing at storage - escape at render.** Sanitizing plain text creates "what did the sanitizer do to my input?" bugs (e.g., the user's name shows up as different on each page).
 
 ### Render in a sandboxed iframe for fully untrusted content
 
@@ -63,7 +63,7 @@ The iframe's origin (`usercontent.example.com`) is isolated from your main app's
 
 This is how Google Docs, GitHub Gists, CodeSandbox, and most CMSes that allow custom HTML do it.
 
-## DOM XSS — different defense
+## DOM XSS - different defense
 
 The classic encoding rules apply to server-rendered HTML. DOM XSS is *client-side*, so the defense lives in JavaScript:
 
@@ -97,7 +97,7 @@ function safeHref(input) {
 }
 ```
 
-> ⚠️ **Never extend the allow-list with `data:`, `blob:`, `vbscript:`, or `file:`.** `data:text/html;base64,...` URLs carry full HTML+JS (this is the exact bypass the attack.md demos). `blob:` URLs from the same origin are equally dangerous in `<iframe src>`. `mailto:` made the list because it cannot carry script — that is the bar for adding a new scheme.
+> ⚠️ **Never extend the allow-list with `data:`, `blob:`, `vbscript:`, or `file:`.** `data:text/html;base64,...` URLs carry full HTML+JS (this is the exact bypass the attack.md demos). `blob:` URLs from the same origin are equally dangerous in `<iframe src>`. `mailto:` made the list because it cannot carry script - that is the bar for adding a new scheme.
 
 ### Use a sanitizer for unavoidable `innerHTML`
 
@@ -132,7 +132,7 @@ Every DOM sink (innerHTML, document.write, etc.) refuses raw strings. The compil
 
 Browser support is Chrome/Edge; Firefox and Safari still lack it. Use as defense in depth where you can.
 
-### postMessage handlers — always check origin
+### postMessage handlers - always check origin
 
 ```javascript
 addEventListener('message', e => {
@@ -149,7 +149,7 @@ addEventListener('message', e => {
 
 The single most common postMessage bug is missing the origin check.
 
-## Content Security Policy — done right
+## Content Security Policy - done right
 
 CSP is defense in depth. A correct CSP catches XSS payloads even if your encoding has a gap.
 
@@ -170,12 +170,12 @@ Content-Security-Policy:
 
 What each line does:
 
-- **`script-src 'nonce-X' 'strict-dynamic'`** — only `<script>` tags with the per-request nonce attribute run. `'strict-dynamic'` says "if you trust this script, also trust any scripts it loads." That means you don't have to manually allow-list every CDN — your bundled bootstrap.js loads everything else and the trust propagates.
-- **`object-src 'none'`** — blocks `<object>`/`<embed>` plugin content.
-- **`base-uri 'none'`** — prevents `<base>` tag injection.
-- **`require-trusted-types-for 'script'`** — DOM sinks must go through a Trusted Types policy.
-- **`upgrade-insecure-requests`** — auto-upgrade http: subresources to https.
-- **`report-uri`** — collects violation reports for monitoring.
+- **`script-src 'nonce-X' 'strict-dynamic'`** - only `<script>` tags with the per-request nonce attribute run. `'strict-dynamic'` says "if you trust this script, also trust any scripts it loads." That means you don't have to manually allow-list every CDN - your bundled bootstrap.js loads everything else and the trust propagates.
+- **`object-src 'none'`** - blocks `<object>`/`<embed>` plugin content.
+- **`base-uri 'none'`** - prevents `<base>` tag injection.
+- **`require-trusted-types-for 'script'`** - DOM sinks must go through a Trusted Types policy.
+- **`upgrade-insecure-requests`** - auto-upgrade http: subresources to https.
+- **`report-uri`** - collects violation reports for monitoring.
 
 ### Per-request nonces
 
@@ -189,10 +189,10 @@ A static nonce defeats the entire scheme.
 
 ### What CSP can't fix
 
-- **JSONP endpoints** on allowed CDNs — `'strict-dynamic'` helps but the deeper fix is to remove JSONP
-- **Dangling-markup attacks** that exfiltrate via images — add `connect-src` + `img-src` restrictions
-- **CSS-based attacks** — `style-src` similarly to scripts
-- **Open redirects** that bounce off your domain — separate defense
+- **JSONP endpoints** on allowed CDNs - `'strict-dynamic'` helps but the deeper fix is to remove JSONP
+- **Dangling-markup attacks** that exfiltrate via images - add `connect-src` + `img-src` restrictions
+- **CSS-based attacks** - `style-src` similarly to scripts
+- **Open redirects** that bounce off your domain - separate defense
 
 ### CSP in report-only first
 
@@ -256,7 +256,7 @@ For reflected/stored XSS attempts in HTTP traffic:
 
 False positives are real; tune by parameter (some fields legitimately accept HTML).
 
-### Signal 3: Stored XSS — detect at write time
+### Signal 3: Stored XSS - detect at write time
 
 For stored XSS specifically: a payload that survives storage indicates the validation/sanitization is broken. Hook the storage layer:
 
@@ -268,11 +268,11 @@ def save_comment(body):
     Comment.objects.create(body=sanitizer.sanitize(body))
 ```
 
-Hit-rate on this signal is interesting — most legit users never trigger it. The ones who do are either rich-text editors that escape-then-encode (predictable, dismissible) or attackers (you want to know).
+Hit-rate on this signal is interesting - most legit users never trigger it. The ones who do are either rich-text editors that escape-then-encode (predictable, dismissible) or attackers (you want to know).
 
 ### Signal 4: Cookie / token theft callbacks
 
-If your app's cookies *could* be exfiltrated, monitor outbound requests from your origin to unknown destinations. The Burp Collaborator pattern works in production too — set up a beacon endpoint on a domain you control, look for unexpected callbacks containing session-shaped data.
+If your app's cookies *could* be exfiltrated, monitor outbound requests from your origin to unknown destinations. The Burp Collaborator pattern works in production too - set up a beacon endpoint on a domain you control, look for unexpected callbacks containing session-shaped data.
 
 ---
 
@@ -329,7 +329,7 @@ def test_postmessage_handler_validates_origin(page):
 |---|---|
 | **Burp Suite (DOM Invader)** | Identifies source-to-sink data flows in client-side JS |
 | **DOMPurify** | HTML sanitizer; safe defaults |
-| **CSP Evaluator** | https://csp-evaluator.withgoogle.com/ — paste a CSP, get bypass analysis |
+| **CSP Evaluator** | https://csp-evaluator.withgoogle.com/ - paste a CSP, get bypass analysis |
 | **Trusted Types** | Browser API + polyfill |
 | **Semgrep** | Static rules for `dangerouslySetInnerHTML`, `v-html`, `innerHTML =`, `eval`, `new Function` |
 | **CodeQL** | Data-flow analysis catches source-to-sink paths in big codebases |
@@ -345,8 +345,8 @@ def test_postmessage_handler_validates_origin(page):
 
 ## Going further
 
-- [Google — Strict CSP](https://csp.withgoogle.com/docs/strict-csp.html)
+- [Google - Strict CSP](https://csp.withgoogle.com/docs/strict-csp.html)
 - [Trusted Types](https://web.dev/trusted-types/)
-- [PortSwigger — Content Security Policy](https://portswigger.net/web-security/cross-site-scripting/content-security-policy)
+- [PortSwigger - Content Security Policy](https://portswigger.net/web-security/cross-site-scripting/content-security-policy)
 - [DOMPurify documentation](https://github.com/cure53/DOMPurify)
-- [PortSwigger — DOM-based vulnerabilities](https://portswigger.net/web-security/dom-based)
+- [PortSwigger - DOM-based vulnerabilities](https://portswigger.net/web-security/dom-based)

@@ -1,6 +1,6 @@
-# Week 16: Defense — Embedding Threat Modeling in the SDLC
+# Week 16: Defense - Embedding Threat Modeling in the SDLC
 
-You worked the four questions in [attack.md](attack.md). This file is about making that practice happen continuously, with the right people, at the right cadence — without becoming theater.
+You worked the four questions in [attack.md](attack.md). This file is about making that practice happen continuously, with the right people, at the right cadence - without becoming theater.
 
 ---
 
@@ -17,7 +17,7 @@ Not every commit. Specifically:
 | Trigger | Granularity | Time budget |
 |---|---|---|
 | New service | Full STRIDE pass on the whole service | 4-8 hours over 1-2 sessions |
-| New third-party integration | Focused — what crosses the new boundary? | 1-2 hours |
+| New third-party integration | Focused - what crosses the new boundary? | 1-2 hours |
 | New auth flow (SSO, SAML, OAuth provider) | Focused on the new flow + adjacent | 2-4 hours |
 | New data domain (PII, health, financial) | Focused on the data + retention/access | 2-4 hours |
 | Architecture change (split / merge service, new deployment region) | Re-visit affected components | 1-3 hours |
@@ -41,13 +41,13 @@ Notably absent: large security teams, ICs from other teams, leadership. Those ve
 
 1. **(5 min)** Whoever proposed the change describes it. Whiteboard / Miro / draw.io / Excalidraw.
 2. **(15 min)** Draw the DFD. Mark trust boundaries.
-3. **(45 min)** Walk STRIDE per component. Capture threats in real-time — one row per threat.
+3. **(45 min)** Walk STRIDE per component. Capture threats in real-time - one row per threat.
 4. **(15 min)** Score: severity, likelihood. Identify top 5.
 5. **(10 min)** Decide owners and dates for top 5. Everything else: backlog or accept.
 
 90 minutes is the wall. Longer sessions decay. Better to run a second session next week than push past 90.
 
-## Output — what to capture
+## Output - what to capture
 
 Don't write prose. Capture a structured artifact:
 
@@ -56,7 +56,7 @@ Don't write prose. Capture a structured artifact:
 
 **Date:** 2026-05-31
 **Authors:** Adedamola A., Jane Doe (security)
-**Status:** Active — review by 2026-08-31
+**Status:** Active - review by 2026-08-31
 
 ## DFD
 
@@ -68,7 +68,7 @@ Don't write prose. Capture a structured artifact:
 |---|---|
 | User → CloudFront | Standard external |
 | CloudFront → API | Auth required beyond /healthz |
-| API → KYC vendor | New — outbound HTTPS w/ API key |
+| API → KYC vendor | New - outbound HTTPS w/ API key |
 
 ## Threats
 
@@ -80,12 +80,12 @@ Don't write prose. Capture a structured artifact:
 
 ## Mitigations (top 5)
 
-1. **02 — Webhook signature** — Eng: Alice — Due: 2026-06-15
+1. **02 - Webhook signature** - Eng: Alice - Due: 2026-06-15
 2. ... 
 
 ## Accepted risks
 
-- **05 — KYC vendor outage causes feature unavailability** — accepted; acceptable degradation; monitoring exists.
+- **05 - KYC vendor outage causes feature unavailability** - accepted; acceptable degradation; monitoring exists.
 
 ## Re-evaluate when
 
@@ -115,7 +115,7 @@ The KYC vendor introduces a new outbound trust boundary. Their API key, response
 
 ### Threats
 
-(table — see template)
+(table - see template)
 
 ### Open questions
 
@@ -144,21 +144,21 @@ This is the *did we do a good job* answer. Threat models that survive incidents 
 
 Concrete signals that a threat-modeling practice is working:
 
-- **Threat models referenced in PR descriptions** — "this addresses TM-02 from the verification model."
-- **Mitigation tickets have IDs back to threat models** — visible traceability.
-- **Postmortems mention threat models** — usually self-critically.
-- **Onboarding includes reading 2-3 existing models** — they become institutional memory.
-- **Security partners are facilitators, not gatekeepers** — engineers do most of the talking.
+- **Threat models referenced in PR descriptions** - "this addresses TM-02 from the verification model."
+- **Mitigation tickets have IDs back to threat models** - visible traceability.
+- **Postmortems mention threat models** - usually self-critically.
+- **Onboarding includes reading 2-3 existing models** - they become institutional memory.
+- **Security partners are facilitators, not gatekeepers** - engineers do most of the talking.
 
 And what bad looks like:
 
 - **PDFs in SharePoint with last-modified dates years old.**
 - **Threat models only the security team ever reads.**
-- **All threats marked "high severity, fix later" — the prioritization muscle has atrophied.**
+- **All threats marked "high severity, fix later" - the prioritization muscle has atrophied.**
 - **No mention in PR / incident venues.**
-- **Threat-modeling treated as compliance checkbox** — "we did it once for ISO."
+- **Threat-modeling treated as compliance checkbox** - "we did it once for ISO."
 
-## Defense in depth — the program shape
+## Defense in depth - the program shape
 
 Threat modeling is one layer. A mature AppSec program also runs:
 
@@ -174,9 +174,9 @@ Threat modeling is one layer. A mature AppSec program also runs:
 | Incident response | Confirmed incidents handled |
 | Postmortem & feedback | Findings update the earlier layers |
 
-No single layer is sufficient. The point of threat modeling specifically is that it produces information **upstream** — when fixes are cheapest and the design is fluid.
+No single layer is sufficient. The point of threat modeling specifically is that it produces information **upstream** - when fixes are cheapest and the design is fluid.
 
-## Maturity model — where to start
+## Maturity model - where to start
 
 If your org has nothing today, don't try to threat-model the whole stack. Start with:
 
@@ -193,19 +193,19 @@ You've completed an introductory AppSec curriculum. What's next:
 
 ### Reading
 
-- **Threat Modeling: Designing for Security** — Adam Shostack (the book)
-- **The Tangled Web** — Michał Zalewski (deep web security)
-- **The Web Application Hacker's Handbook** (2nd ed) — Stuttard & Pinto (classic offensive)
-- **Building Secure & Reliable Systems** — Google SRE on security (free PDF)
-- **Real-World Cryptography** — David Wong (modern crypto in production)
+- **Threat Modeling: Designing for Security** - Adam Shostack (the book)
+- **The Tangled Web** - Michał Zalewski (deep web security)
+- **The Web Application Hacker's Handbook** (2nd ed) - Stuttard & Pinto (classic offensive)
+- **Building Secure & Reliable Systems** - Google SRE on security (free PDF)
+- **Real-World Cryptography** - David Wong (modern crypto in production)
 
 ### Practice
 
-- **PortSwigger Web Security Academy** — the rest of the catalog, especially advanced labs
-- **HackTheBox / TryHackMe** — for hands-on
-- **CTFs** — picoCTF (beginner), DEF CON CTF qualifiers (advanced)
-- **Bug bounty** — HackerOne, Bugcrowd, Intigriti
-- **OSCP / PNPT** — if you want the offensive-security cert track
+- **PortSwigger Web Security Academy** - the rest of the catalog, especially advanced labs
+- **HackTheBox / TryHackMe** - for hands-on
+- **CTFs** - picoCTF (beginner), DEF CON CTF qualifiers (advanced)
+- **Bug bounty** - HackerOne, Bugcrowd, Intigriti
+- **OSCP / PNPT** - if you want the offensive-security cert track
 
 ### Community
 
@@ -230,7 +230,7 @@ Pick one. You won't be deep on all of them; depth on one is more valuable than b
 
 ## A closing word
 
-Sixteen weeks isn't enough to make anyone "an AppSec expert." It is enough to recognize the patterns, ask the right questions, and know where to look next. The discipline beats the talent: most production AppSec work is operational — patching, reviewing, threat-modeling, alert-tuning — not finding novel exploits.
+Sixteen weeks isn't enough to make anyone "an AppSec expert." It is enough to recognize the patterns, ask the right questions, and know where to look next. The discipline beats the talent: most production AppSec work is operational - patching, reviewing, threat-modeling, alert-tuning - not finding novel exploits.
 
 If you finished this curriculum, you have the foundation. The job from here is the practice.
 
@@ -239,7 +239,7 @@ If you finished this curriculum, you have the foundation. The job from here is t
 - [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/)
 - [OWASP Threat Modeling Project](https://owasp.org/www-project-threat-model/)
 - [Microsoft Threat Modeling Tool](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool)
-- [Shostack — Threat Modeling: Designing for Security](https://shostack.org/books/threat-modeling-book)
-- [Building Secure & Reliable Systems — Google SRE book](https://google.github.io/building-secure-and-reliable-systems/)
-- [OWASP SAMM — Software Assurance Maturity Model](https://owaspsamm.org/)
-- [BSIMM — Building Security In Maturity Model](https://www.bsimm.com/)
+- [Shostack - Threat Modeling: Designing for Security](https://shostack.org/books/threat-modeling-book)
+- [Building Secure & Reliable Systems - Google SRE book](https://google.github.io/building-secure-and-reliable-systems/)
+- [OWASP SAMM - Software Assurance Maturity Model](https://owaspsamm.org/)
+- [BSIMM - Building Security In Maturity Model](https://www.bsimm.com/)

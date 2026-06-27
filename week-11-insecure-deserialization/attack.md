@@ -1,4 +1,4 @@
-# Week 11: Attack walkthrough — Insecure Deserialization
+# Week 11: Attack walkthrough - Insecure Deserialization
 
 > ⚠️ **Lab only.** Generated gadget chains are real RCE primitives.
 
@@ -6,7 +6,7 @@
 
 ## The mental model
 
-Serialization turns an object (with fields, methods, references) into bytes that can be sent over the wire or stored. Deserialization reverses it. Some serialization formats embed *behavior* — class names, magic methods that run during reconstruction, references to functions.
+Serialization turns an object (with fields, methods, references) into bytes that can be sent over the wire or stored. Deserialization reverses it. Some serialization formats embed *behavior* - class names, magic methods that run during reconstruction, references to functions.
 
 When the app **deserializes attacker-controlled bytes**, the attacker effectively runs code as the app:
 
@@ -57,7 +57,7 @@ Find this in cookies, hidden form fields, or wherever the app exposes session st
 
 ### Step 2: Tamper with property values
 
-The simplest attack — just modify the values:
+The simplest attack - just modify the values:
 
 ```
 O:4:"User":3:{s:5:"email";s:11:"alice@a.com";s:5:"admin";b:1;s:3:"age";i:30;}
@@ -126,7 +126,7 @@ In HTTP traffic:
 
 ### Step 2: The Apache Commons Collections chain
 
-ysoserial's `CommonsCollections5` (and a dozen others) abuse a specific Apache Commons Collections feature: `InvokerTransformer.transform()` calls *any method* via reflection. Chained through other library classes, you get RCE without the target app explicitly calling anything dangerous — just *deserializing* triggers the chain.
+ysoserial's `CommonsCollections5` (and a dozen others) abuse a specific Apache Commons Collections feature: `InvokerTransformer.transform()` calls *any method* via reflection. Chained through other library classes, you get RCE without the target app explicitly calling anything dangerous - just *deserializing* triggers the chain.
 
 ```bash
 # Generate the payload
@@ -162,7 +162,7 @@ ysoserial includes ~30 chains. Each works against specific dependency versions:
 
 For a target, look at the dependencies. The one that's loaded determines which chain works.
 
-### Step 5: Constructing without ysoserial — when no chain works
+### Step 5: Constructing without ysoserial - when no chain works
 
 If your dependency mix is unusual, you might write your own gadget. The pattern:
 
@@ -224,7 +224,7 @@ Grep for all of these. Each can be the bug.
 
 ## Part 4: .NET (briefly)
 
-### BinaryFormatter — deprecated for a reason
+### BinaryFormatter - deprecated for a reason
 
 Microsoft has explicitly deprecated `BinaryFormatter`:
 
@@ -242,13 +242,13 @@ Tools like **ysoserial.net** generate .NET gadget chains the same way ysoserial 
 
 ### Modern .NET alternatives
 
-- `System.Text.Json` — safe data format
-- `Newtonsoft.Json` with `TypeNameHandling.None` — safe; **`TypeNameHandling.All` or `Auto` is unsafe** (allows class injection in JSON)
-- Protobuf — safe data format
+- `System.Text.Json` - safe data format
+- `Newtonsoft.Json` with `TypeNameHandling.None` - safe; **`TypeNameHandling.All` or `Auto` is unsafe** (allows class injection in JSON)
+- Protobuf - safe data format
 
-## Part 5: JSON deserialization — when it's NOT safe
+## Part 5: JSON deserialization - when it's NOT safe
 
-JSON itself is a data format — no executable behavior. But several JSON libraries have "polymorphic" modes that embed class information:
+JSON itself is a data format - no executable behavior. But several JSON libraries have "polymorphic" modes that embed class information:
 
 ```json
 {
@@ -275,6 +275,6 @@ The fix is to disable polymorphic typing or use an explicit allow-list of expect
 - **Assuming the app needs to "use" the deserialized object.** Just calling deserialize is enough; the magic methods do the rest.
 - **Trying random gadgets.** The chain depends on the target's classpath. Profile the dependencies first.
 - **Stopping at the format identification.** The exploit is the gadget chain, not the format recognition.
-- **Treating JSON as inherently safe.** It is — *unless* the library does polymorphic typing.
+- **Treating JSON as inherently safe.** It is - *unless* the library does polymorphic typing.
 
 Now read [defense.md](defense.md).

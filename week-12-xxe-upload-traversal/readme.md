@@ -21,7 +21,7 @@ By the end of this week you'll be able to:
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — XXE
+### Lab 1: PortSwigger Academy - XXE
 
 [9 XXE labs](https://portswigger.net/web-security/xxe). Recommended:
 
@@ -29,7 +29,7 @@ By the end of this week you'll be able to:
 2. ["Exploiting XXE to perform SSRF"](https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-perform-ssrf-attacks)
 3. ["Blind XXE with out-of-band interaction"](https://portswigger.net/web-security/xxe/blind/lab-blind-xxe-with-out-of-band-interaction)
 
-### Lab 2: PortSwigger Academy — File upload + path traversal
+### Lab 2: PortSwigger Academy - File upload + path traversal
 
 - ["Remote code execution via web shell upload"](https://portswigger.net/web-security/file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload)
 - ["Web shell upload via Content-Type restriction bypass"](https://portswigger.net/web-security/file-upload/lab-file-upload-web-shell-upload-via-content-type-restriction-bypass)
@@ -56,11 +56,11 @@ The "File Inclusion" and "File Upload" modules at low/medium/high difficulties.
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — XXE](https://portswigger.net/web-security/xxe) | Best overview | 45 min |
-| [PortSwigger — File upload vulnerabilities](https://portswigger.net/web-security/file-upload) | Best overview | 30 min |
-| [PortSwigger — Path traversal](https://portswigger.net/web-security/file-path-traversal) | The encoding catalog | 20 min |
-| [OWASP — XXE Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html) | Defense by language | 20 min |
-| [Snyk — Zip Slip](https://snyk.io/research/zip-slip-vulnerability) | The archive-extraction variant | 15 min |
+| [PortSwigger - XXE](https://portswigger.net/web-security/xxe) | Best overview | 45 min |
+| [PortSwigger - File upload vulnerabilities](https://portswigger.net/web-security/file-upload) | Best overview | 30 min |
+| [PortSwigger - Path traversal](https://portswigger.net/web-security/file-path-traversal) | The encoding catalog | 20 min |
+| [OWASP - XXE Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html) | Defense by language | 20 min |
+| [Snyk - Zip Slip](https://snyk.io/research/zip-slip-vulnerability) | The archive-extraction variant | 15 min |
 
 ## 💡 What you should already know
 

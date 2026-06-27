@@ -1,4 +1,4 @@
-# Week 04: Defense — Stopping Authentication Failures
+# Week 04: Defense - Stopping Authentication Failures
 
 You've broken authentication ten different ways in [attack.md](attack.md). Defending requires layered controls; no single fix covers all of them.
 
@@ -57,7 +57,7 @@ Per-user lockout stops brute force but invites:
 
 ### Per-IP defeats some, hurts mobile networks
 
-Per-IP rate limits help against credential stuffing from one source — but a single carrier-NAT IP can host thousands of legitimate users.
+Per-IP rate limits help against credential stuffing from one source - but a single carrier-NAT IP can host thousands of legitimate users.
 
 ### Layered approach
 
@@ -127,7 +127,7 @@ Same message, same length, same status code, whether the user exists or not.
 user = User.objects.filter(email=email).first()
 if user and bcrypt.checkpw(password, user.hashed):
     return ok()
-return unauthorized()    # fast path for "no user" — leaks via timing
+return unauthorized()    # fast path for "no user" - leaks via timing
 
 # Right: always do the bcrypt work
 user = User.objects.filter(email=email).first()
@@ -155,18 +155,18 @@ HTTP/1.1 200 OK
 
 After a uniform delay (queue the email send async; reply immediately).
 
-## MFA — done right
+## MFA - done right
 
 ### Use phishing-resistant factors
 
 Ranked by strength:
 
-1. **WebAuthn / Passkeys** (FIDO2) — cryptographic, origin-bound, can't be phished
-2. **TOTP** (authenticator app) — phishable but solid
-3. **Push notification** (mobile app approve) — phishable via fatigue; needs number-matching
-4. **Email-link MFA** — only as strong as the user's email account
-5. **SMS** — vulnerable to SIM-swap; *avoid where possible*
-6. **Security questions** — not MFA; treat as a username supplement
+1. **WebAuthn / Passkeys** (FIDO2) - cryptographic, origin-bound, can't be phished
+2. **TOTP** (authenticator app) - phishable but solid
+3. **Push notification** (mobile app approve) - phishable via fatigue; needs number-matching
+4. **Email-link MFA** - only as strong as the user's email account
+5. **SMS** - vulnerable to SIM-swap; *avoid where possible*
+6. **Security questions** - not MFA; treat as a username supplement
 
 NIST 800-63B explicitly **deprecates SMS** as a second factor. Many regulated industries now prohibit it for high-value access.
 
@@ -188,7 +188,7 @@ Bruteforcing 6-digit codes is only viable when verification is unlimited.
 
 ### Number-matching for push notifications
 
-Modern push MFA (Microsoft Authenticator, Duo) shows a number on the login page. The user must enter that number on their phone. Defeats fatigue attacks — you can't just tap "approve."
+Modern push MFA (Microsoft Authenticator, Duo) shows a number on the login page. The user must enter that number on their phone. Defeats fatigue attacks - you can't just tap "approve."
 
 ### Recovery codes done right
 
@@ -228,17 +228,17 @@ def request_password_reset(email):
 Key points:
 
 - **Token is high-entropy random**, not derived from user data
-- **Stored hashed**, not plaintext — DB leak doesn't compromise pending resets
+- **Stored hashed**, not plaintext - DB leak doesn't compromise pending resets
 - **Short expiry** (15 min, not days)
-- **Single use** — set `used=True` after consumption
-- **Canonical host** in the URL — defeats host-header injection
+- **Single use** - set `used=True` after consumption
+- **Canonical host** in the URL - defeats host-header injection
 - **No-op for nonexistent users**, with same timing
 
 ## "Remember me" hardening
 
 If you must have it (most apps shouldn't):
 
-- Separate from session token — a long-lived "device token."
+- Separate from session token - a long-lived "device token."
 - Stored hashed in DB, mapped to (user, device fingerprint).
 - Re-prompts for MFA on sensitive actions, no matter how "remembered" the device is.
 - Revocable from a "Devices" UI in account settings.
@@ -347,7 +347,7 @@ def test_enumeration_timing_uniform(client):
 
     # Means within 10% of each other.
     # NOTE: `max(t1+t2)` (list concat → biggest single sample) makes this
-    # assertion meaningless — one GC spike inflates the denominator and the
+    # assertion meaningless - one GC spike inflates the denominator and the
     # test always passes. Normalize against the smaller mean instead:
     mean1, mean2 = sum(t1)/len(t1), sum(t2)/len(t2)
     assert abs(mean1 - mean2) / min(mean1, mean2) < 0.10
@@ -389,7 +389,7 @@ def test_password_reset_no_op_for_nonexistent_user(client):
 
 ## Going further
 
-- [NIST SP 800-63B — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
-- [OWASP — Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
-- [PortSwigger — Authentication vulnerabilities](https://portswigger.net/web-security/authentication)
-- [Krebs on Security — MFA Fatigue & Uber](https://krebsonsecurity.com/2022/09/uber-says-lapsus-hackers-attacker-may-have-used-mfa-fatigue/) — real-world push fatigue post-mortem
+- [NIST SP 800-63B - Digital Identity Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [OWASP - Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+- [PortSwigger - Authentication vulnerabilities](https://portswigger.net/web-security/authentication)
+- [Krebs on Security - MFA Fatigue & Uber](https://krebsonsecurity.com/2022/09/uber-says-lapsus-hackers-attacker-may-have-used-mfa-fatigue/) - real-world push fatigue post-mortem

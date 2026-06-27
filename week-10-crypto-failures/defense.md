@@ -1,4 +1,4 @@
-# Week 10: Defense — Cryptographic Failures
+# Week 10: Defense - Cryptographic Failures
 
 You've seen the failure modes in [attack.md](attack.md). The good news: each defense is well-known, well-supported by libraries, and free.
 
@@ -45,7 +45,7 @@ if bcrypt.checkpw(submitted.encode(), stored_hash):
     ...
 ```
 
-**Never use:** plain SHA-256/SHA-1/MD5, your own salt scheme, "encryption" of passwords (passwords should be hashed, never encrypted — encryption is reversible).
+**Never use:** plain SHA-256/SHA-1/MD5, your own salt scheme, "encryption" of passwords (passwords should be hashed, never encrypted - encryption is reversible).
 
 ### Periodic upgrade
 
@@ -57,7 +57,7 @@ def login(username, submitted_password):
     if not verify(user.stored_hash, submitted_password):
         raise BadCredentials
 
-    # Successful login — opportunistically rehash with newer algorithm
+    # Successful login - opportunistically rehash with newer algorithm
     if needs_rehash(user.stored_hash):
         user.stored_hash = ph.hash(submitted_password)
         user.save()
@@ -65,7 +65,7 @@ def login(username, submitted_password):
     return user
 ```
 
-Within a few months, most active users are on the new hash. The straggler accounts that never log in stay on the old hash — which is fine because they're not active attack targets.
+Within a few months, most active users are on the new hash. The straggler accounts that never log in stay on the old hash - which is fine because they're not active attack targets.
 
 ## Randomness
 
@@ -79,7 +79,7 @@ Within a few months, most active users are on the new hash. The straggler accoun
 | `crypto/rand` (Go) | `math/rand` |
 | `SecureRandom.hex(32)` (Ruby) | `rand` |
 
-If you can't tell whether the source is cryptographic, **assume it isn't.** The exception is when the language docs explicitly say "this is a CSPRNG" — `Python.secrets`, `Node.crypto`, `Java.SecureRandom`, etc.
+If you can't tell whether the source is cryptographic, **assume it isn't.** The exception is when the language docs explicitly say "this is a CSPRNG" - `Python.secrets`, `Node.crypto`, `Java.SecureRandom`, etc.
 
 ### Token entropy
 
@@ -104,7 +104,7 @@ hmac.compare_digest(submitted_token, expected_token)
 
 The library's purpose-built for this: no short-circuit, no length-dependent path, no JIT escape hatch.
 
-In templates or string-building code, the comparison happens *after* the secret has been compared by a library — don't roll your own.
+In templates or string-building code, the comparison happens *after* the secret has been compared by a library - don't roll your own.
 
 ## Secret management
 
@@ -121,7 +121,7 @@ The minimum bar:
 - No secret in source control
 - No secret in build artifacts (Docker images, frontend bundles)
 - No secret in logs (mask in logging middleware)
-- Rotation has a process — manual is OK; automated is better
+- Rotation has a process - manual is OK; automated is better
 
 ### Pre-commit secrets scanning
 
@@ -139,10 +139,10 @@ repos:
 
 Catches the bug before it's pushed. CI scans as a secondary catch.
 
-### When a secret leaks — rotation playbook
+### When a secret leaks - rotation playbook
 
 1. **Confirm.** Is it actually live?
-2. **Revoke.** Don't wait to "investigate first" — the secret is in attacker hands.
+2. **Revoke.** Don't wait to "investigate first" - the secret is in attacker hands.
 3. **Rotate.** Generate the new one; deploy.
 4. **Audit access.** What did the attacker do with the old one?
 5. **Backstop.** Was this avoidable with secrets scanning? Add the hook.
@@ -153,7 +153,7 @@ For high-impact secrets (signing keys, prod database creds), have the rotation p
 
 ### Use Mozilla's SSL Configuration Generator
 
-https://ssl-config.mozilla.org/ — gives nginx, Apache, HAProxy, AWS ALB configurations for three profiles:
+https://ssl-config.mozilla.org/ - gives nginx, Apache, HAProxy, AWS ALB configurations for three profiles:
 
 | Profile | Use for |
 |---|---|
@@ -173,7 +173,7 @@ Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
 After running with this for a few months, submit to the [HSTS preload list](https://hstspreload.org/) for first-connection protection.
 
-Be careful about `includeSubDomains` — every subdomain must support HTTPS. If you have `http://internal.example`, this header breaks it.
+Be careful about `includeSubDomains` - every subdomain must support HTTPS. If you have `http://internal.example`, this header breaks it.
 
 ### Certificate management
 
@@ -190,7 +190,7 @@ For symmetric encryption:
 - **AES-GCM** (with a randomly-generated 96-bit nonce per message)
 - **ChaCha20-Poly1305** (especially when CPU has no AES hardware)
 
-Both are AEAD — Authenticated Encryption with Associated Data. The output is ciphertext *plus a MAC*. Tampering is detected. No padding oracle is possible.
+Both are AEAD - Authenticated Encryption with Associated Data. The output is ciphertext *plus a MAC*. Tampering is detected. No padding oracle is possible.
 
 ```python
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
@@ -206,12 +206,12 @@ plaintext = cipher.decrypt(nonce, ciphertext, associated_data=None)
 # Raises if MAC fails
 ```
 
-> ⚠️ **Nonce reuse with AES-GCM (or ChaCha20-Poly1305) is fatal.** Encrypting two messages with the same `(key, nonce)` pair leaks the XOR of the plaintexts AND lets an attacker forge arbitrary messages under that key — full integrity bypass, not just a confidentiality leak. With a 96-bit random nonce, birthday-collision probability hits ~50% around 2³⁶ messages: fine for short-lived sessions, dangerous for long-lived keys at high message volume.
+> ⚠️ **Nonce reuse with AES-GCM (or ChaCha20-Poly1305) is fatal.** Encrypting two messages with the same `(key, nonce)` pair leaks the XOR of the plaintexts AND lets an attacker forge arbitrary messages under that key - full integrity bypass, not just a confidentiality leak. With a 96-bit random nonce, birthday-collision probability hits ~50% around 2³⁶ messages: fine for short-lived sessions, dangerous for long-lived keys at high message volume.
 >
 > Three safer defaults when the message volume is high or the key is long-lived:
 > - **Counter-based nonces** (each side maintains a strict monotonic counter, sync via key derivation per session).
-> - **AES-GCM-SIV** (RFC 8452) — explicitly nonce-misuse-resistant.
-> - **XChaCha20-Poly1305** — 192-bit nonce extension, collision probability ~zero in any realistic regime.
+> - **AES-GCM-SIV** (RFC 8452) - explicitly nonce-misuse-resistant.
+> - **XChaCha20-Poly1305** - 192-bit nonce extension, collision probability ~zero in any realistic regime.
 >
 > The Cloudflare 2017 lesson and several IPsec implementations hit this in production. The library accepting your nonce won't warn you.
 
@@ -221,9 +221,9 @@ plaintext = cipher.decrypt(nonce, ciphertext, associated_data=None)
 
 For high-assurance applications:
 
-- **Use a KMS** (AWS KMS, GCP KMS, Azure Key Vault) — your code never sees the raw key
-- **Envelope encryption** — KMS encrypts a per-record DEK; you store the encrypted DEK with the data
-- **Rotate keys regularly** — yearly minimum
+- **Use a KMS** (AWS KMS, GCP KMS, Azure Key Vault) - your code never sees the raw key
+- **Envelope encryption** - KMS encrypts a per-record DEK; you store the encrypted DEK with the data
+- **Rotate keys regularly** - yearly minimum
 
 For everything else, derive keys from a master secret via HKDF, store the master secret in your secret manager.
 
@@ -292,7 +292,7 @@ For app-level encrypted data: a spike in decryption failures = either a bug or s
 
 ### Signal 3: TLS handshake failures from internal services
 
-If an internal service can't reach the cert authority or has clock skew, TLS handshakes fail. Indicates a cert expiry incident — page before users notice.
+If an internal service can't reach the cert authority or has clock skew, TLS handshakes fail. Indicates a cert expiry incident - page before users notice.
 
 ### Signal 4: Secrets in logs
 
@@ -378,9 +378,9 @@ def test_hsts_present(client):
 
 ## Going further
 
-- [Latacora — Cryptographic Right Answers](https://www.latacora.com/blog/2018/04/03/cryptographic-right-answers/)
-- [OWASP — Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
-- [OWASP — Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
+- [Latacora - Cryptographic Right Answers](https://www.latacora.com/blog/2018/04/03/cryptographic-right-answers/)
+- [OWASP - Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+- [OWASP - Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
 - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
-- [Cryptopals Challenges](https://cryptopals.com/) — practice cryptanalysis hands-on (educational only)
-- [NIST SP 800-131A](https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final) — retired-algorithm reference
+- [Cryptopals Challenges](https://cryptopals.com/) - practice cryptanalysis hands-on (educational only)
+- [NIST SP 800-131A](https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final) - retired-algorithm reference

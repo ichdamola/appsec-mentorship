@@ -1,4 +1,4 @@
-# Week 03: Attack walkthrough — Broken Access Control & IDOR
+# Week 03: Attack walkthrough - Broken Access Control & IDOR
 
 > ⚠️ **Lab only.**
 
@@ -62,7 +62,7 @@ If the response returns user 124's profile, that's an IDOR. The server is using 
 | S3 / object-store URL | `s3://uploads/uploaded-by/u_4451/avatar.png` |
 | Encoded in a token | `?token=eyJvcmRlcl9pZCI6NDQ1MX0=` (decode the JSON inside) |
 
-**The encoded-token case is the dangerous one.** Developers think "this token is opaque" — it's just base64'd JSON with no signature. Decode, change the ID, re-encode, send.
+**The encoded-token case is the dangerous one.** Developers think "this token is opaque" - it's just base64'd JSON with no signature. Decode, change the ID, re-encode, send.
 
 ## Attack 2: Horizontal privilege escalation
 
@@ -92,7 +92,7 @@ Vertical escalation in practice:
 2. **Replay them as a regular user.** Many systems show/hide UI based on role but allow the endpoint regardless.
 3. **Try `X-Original-Role: admin` and similar header tricks.** Some apps proxy headers from a trusted gateway; if the gateway is missing, the header is attacker-controlled.
 
-## Attack 4: Forced browsing — admin URLs that aren't hidden
+## Attack 4: Forced browsing - admin URLs that aren't hidden
 
 If the admin panel is at `/admin` and unauthenticated users can visit it, that's the bug:
 
@@ -110,7 +110,7 @@ Wordlists for this exist (SecLists is the standard). Tools: **ffuf**, **dirsearc
 ffuf -w common-paths.txt -u http://target.local/FUZZ -mc 200,302,401,403
 ```
 
-In lab only. The 401/403 responses are interesting — they tell you the endpoint exists but you're not allowed in. Sometimes those routes have a separate weakness that lets you in anyway (see attack 5).
+In lab only. The 401/403 responses are interesting - they tell you the endpoint exists but you're not allowed in. Sometimes those routes have a separate weakness that lets you in anyway (see attack 5).
 
 ## Attack 5: URL-based access control circumvention
 
@@ -125,7 +125,7 @@ Trivially bypassed if:
 - **Path normalization differs:** `/admin/..//users` may not match `/admin/*` at the LB but routes to the same handler at the backend.
 - **Trailing slash:** `/admin` blocked, `/admin/` allowed.
 - **Encoded slash:** `/%2fadmin/users`
-- **Mixed-case URL:** `/Admin/users` — match is case-sensitive at LB, insensitive at backend.
+- **Mixed-case URL:** `/Admin/users` - match is case-sensitive at LB, insensitive at backend.
 
 This is the "URL-based access control can be circumvented" PortSwigger lab. The fix is to do auth in the application, not at the proxy.
 
@@ -154,9 +154,9 @@ If the server's middleware reads `_method` before the auth check runs, you've by
 Same endpoint, different methods, different protections. A common pattern:
 
 ```
-GET /api/users/123     # protected — checks "can read"
-PATCH /api/users/123   # protected — checks "can edit"
-DELETE /api/users/123  # forgotten — no check at all
+GET /api/users/123     # protected - checks "can read"
+PATCH /api/users/123   # protected - checks "can edit"
+DELETE /api/users/123  # forgotten - no check at all
 ```
 
 Test every method on every authenticated endpoint. `OPTIONS` is good for enumeration; `DELETE` and `PUT` are most often forgotten.

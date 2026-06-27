@@ -1,6 +1,6 @@
-# DFD — `<system or feature name>`
+# DFD - `<system or feature name>`
 
-> Fork this file. Replace each `<…>` with the real artifact. Keep the comments — they're prompts for you to answer.
+> Fork this file. Replace each `<…>` with the real artifact. Keep the comments - they're prompts for you to answer.
 
 ## What you're modeling
 
@@ -50,7 +50,7 @@ flowchart LR
 <!--
 DFD primitives to keep faithful:
   ((double-circle))  external entity (user, third party, attacker persona)
-  [rounded box]      process — runs code, accepts input, produces output
+  [rounded box]      process - runs code, accepts input, produces output
   [(cylinder)]       data store
   -->                data flow (label with protocol / auth)
   subgraph           trust boundary
@@ -77,6 +77,6 @@ DFD primitives to keep faithful:
 
 ## Out of scope
 
-<!-- Be explicit. "Network-layer DDoS — covered by CDN vendor SLA." "Physical security of AWS — accepted." Future-you reading this needs to know what was deliberately not modeled. -->
+<!-- Be explicit. "Network-layer DDoS - covered by CDN vendor SLA." "Physical security of AWS - accepted." Future-you reading this needs to know what was deliberately not modeled. -->
 
 ## Next: see [stride-worksheet.md](stride-worksheet.md) for STRIDE per component.

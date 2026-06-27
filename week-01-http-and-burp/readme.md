@@ -23,7 +23,7 @@ You'll use two labs this week:
 docker run -d -p 3000:3000 --name juice-shop bcoles/juice-shop
 ```
 
-Visit `http://localhost:3000` — you should see a beverage-themed e-commerce site. Every part of it is deliberately broken.
+Visit `http://localhost:3000` - you should see a beverage-themed e-commerce site. Every part of it is deliberately broken.
 
 ### Lab 2: PortSwigger Web Security Academy
 
@@ -49,14 +49,14 @@ Free account at https://portswigger.net/web-security. We'll use the **["Reflecte
 
 | Resource | Why it matters | Time |
 |---|---|---|
-| [PortSwigger — What is Burp Suite?](https://portswigger.net/burp/documentation/desktop/getting-started) | The official tour | 20 min |
-| [MDN — HTTP overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview) | Foundation — requests, responses, methods, status codes | 20 min |
-| [OWASP — Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/) | The canonical classification | 15 min |
-| [PortSwigger Academy — Reflected XSS](https://portswigger.net/web-security/cross-site-scripting/reflected) | Lab + theory in one | 30 min |
+| [PortSwigger - What is Burp Suite?](https://portswigger.net/burp/documentation/desktop/getting-started) | The official tour | 20 min |
+| [MDN - HTTP overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview) | Foundation - requests, responses, methods, status codes | 20 min |
+| [OWASP - Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/) | The canonical classification | 15 min |
+| [PortSwigger Academy - Reflected XSS](https://portswigger.net/web-security/cross-site-scripting/reflected) | Lab + theory in one | 30 min |
 
 ## 💡 What you should already know
 
-- Basic HTML and JavaScript — enough to read a `<script>` tag and understand `alert()`
+- Basic HTML and JavaScript - enough to read a `<script>` tag and understand `alert()`
 - What a URL is, what query parameters look like
 - How to use a browser's DevTools (Network tab, Console)
 - Be comfortable in a terminal (Docker, curl)

@@ -2,9 +2,9 @@
 
 ## 🎯 What you'll learn
 
-- Exploit **stored XSS** (persistent, hits every viewer) — the high-impact cousin of reflected XSS
+- Exploit **stored XSS** (persistent, hits every viewer) - the high-impact cousin of reflected XSS
 - Identify and exploit **DOM-based XSS** where the server never sees the payload
-- Understand **mutation XSS (mXSS)** — sanitizer bypasses via browser HTML re-parsing
+- Understand **mutation XSS (mXSS)** - sanitizer bypasses via browser HTML re-parsing
 - Bypass real-world **Content Security Policy** configurations
 - Design a CSP that's actually effective and harder to bypass
 
@@ -17,7 +17,7 @@ By the end of this week you'll be able to:
 
 ## Prerequisite
 
-[Week 01: HTTP, Burp, and Reflected XSS](../week-01-http-and-burp/) is required — we're building on its definition of XSS, its tooling setup, and the basic payload patterns.
+[Week 01: HTTP, Burp, and Reflected XSS](../week-01-http-and-burp/) is required - we're building on its definition of XSS, its tooling setup, and the basic payload patterns.
 
 ## ⚠️ Scope reminder
 
@@ -25,7 +25,7 @@ By the end of this week you'll be able to:
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — stored, DOM, and CSP labs
+### Lab 1: PortSwigger Academy - stored, DOM, and CSP labs
 
 The Academy has [extensive XSS labs](https://portswigger.net/web-security/cross-site-scripting). Recommended:
 
@@ -47,7 +47,7 @@ Continue with the XSS challenges. Juice Shop has stored XSS in the user profile 
 
 ## ✅ Your job
 
-1. **Solve the stored XSS lab cold.** Then exploit it for cookie theft *with* a payload that runs `fetch()` — go past `alert(1)`.
+1. **Solve the stored XSS lab cold.** Then exploit it for cookie theft *with* a payload that runs `fetch()` - go past `alert(1)`.
 2. **Solve the DOM XSS lab.** This requires reading client-side JS, which is half of modern AppSec.
 3. **Solve one of the CSP-bypass labs.** Bring a real understanding of why each rule blocks what.
 4. **Read [attack.md](attack.md).**
@@ -57,15 +57,15 @@ Continue with the XSS challenges. Juice Shop has stored XSS in the user profile 
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — DOM-based vulnerabilities](https://portswigger.net/web-security/dom-based) | The taxonomy of DOM sinks | 45 min |
-| [Google — Strict CSP guide](https://csp.withgoogle.com/docs/strict-csp.html) | The modern CSP recipe | 30 min |
-| [OWASP — XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) | Context-by-context rules | 30 min |
+| [PortSwigger - DOM-based vulnerabilities](https://portswigger.net/web-security/dom-based) | The taxonomy of DOM sinks | 45 min |
+| [Google - Strict CSP guide](https://csp.withgoogle.com/docs/strict-csp.html) | The modern CSP recipe | 30 min |
+| [OWASP - XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) | Context-by-context rules | 30 min |
 | [Trusted Types](https://web.dev/trusted-types/) | The modern browser API that makes DOM XSS structurally harder | 20 min |
 | [DOMPurify documentation](https://github.com/cure53/DOMPurify) | The de-facto HTML sanitizer | 20 min |
 
 ## 💡 What you should already know
 
 - Reflected XSS basics ([Week 01](../week-01-http-and-burp/))
-- HTML, CSS, JavaScript — at the level of reading minified production code
+- HTML, CSS, JavaScript - at the level of reading minified production code
 - The browser's same-origin policy at a conceptual level
 - How to use browser DevTools (Sources tab, console, breakpoints)

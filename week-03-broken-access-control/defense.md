@@ -1,4 +1,4 @@
-# Week 03: Defense — Stopping Broken Access Control
+# Week 03: Defense - Stopping Broken Access Control
 
 You've now exploited the IDOR / forced-browsing / mass-assignment family. Now: the defenses that make them impossible.
 
@@ -6,7 +6,7 @@ You've now exploited the IDOR / forced-browsing / mass-assignment family. Now: t
 
 ## The single rule
 
-> **Deny by default. Every request, every object, every field — explicitly authorize.**
+> **Deny by default. Every request, every object, every field - explicitly authorize.**
 
 Access control bugs win when developers default to "allow" and then list the things that aren't allowed (a denylist). The denylist always has gaps. Flip it: default deny; explicitly authorize each access.
 
@@ -44,7 +44,7 @@ def get_user(id):
     return User.objects.get(id=id, owner=request.user)
 ```
 
-Returning 404 instead of 403 is a small win — it doesn't leak object existence.
+Returning 404 instead of 403 is a small win - it doesn't leak object existence.
 
 ## Centralize authorization logic
 
@@ -59,7 +59,7 @@ If every endpoint has its own check, you'll forget some. Centralize:
 
 The win: one policy file per resource, not one check per endpoint. Reviewers can see "what's allowed on `User`?" in one place.
 
-## RBAC vs. ABAC — pick consciously
+## RBAC vs. ABAC - pick consciously
 
 | Model | Best for | Example |
 |---|---|---|
@@ -67,7 +67,7 @@ The win: one policy file per resource, not one check per endpoint. Reviewers can
 | **ABAC** (Attribute-Based) | Fine-grained, dynamic conditions | "engineer can read PRs they're a reviewer on" |
 | **ReBAC** (Relationship-Based, Zanzibar-style) | Sharing models with arbitrary relationships | Google Docs, GitHub repos |
 
-Most apps start RBAC, end up ABAC. The mistake is **mixing them ad-hoc** — half the codebase checks `user.role == 'admin'`, the other half checks `user.has_permission('delete_user')`. Pick one model and apply it consistently.
+Most apps start RBAC, end up ABAC. The mistake is **mixing them ad-hoc** - half the codebase checks `user.role == 'admin'`, the other half checks `user.has_permission('delete_user')`. Pick one model and apply it consistently.
 
 ## Allow-list inputs (defeats mass assignment)
 
@@ -99,7 +99,7 @@ def update_me():
     serializer.save()
 ```
 
-The `role` field isn't in the serializer's allow-list, so attempts to set it are silently dropped. (Some frameworks log it as a warning — useful detection signal.)
+The `role` field isn't in the serializer's allow-list, so attempts to set it are silently dropped. (Some frameworks log it as a warning - useful detection signal.)
 
 ## Method-level access control on every endpoint
 
@@ -131,7 +131,7 @@ Even with object-level authz:
 
 ---
 
-## Detection — what does this look like in logs?
+## Detection - what does this look like in logs?
 
 Access control violations are subtle in logs because successful exploitation looks like a normal request. You need *behavioral* signals.
 
@@ -171,7 +171,7 @@ def authorize(user, obj):
         raise PermissionDenied
 ```
 
-This is one of the highest-fidelity signals in B2B SaaS — almost no legitimate traffic.
+This is one of the highest-fidelity signals in B2B SaaS - almost no legitimate traffic.
 
 ### Signal 4: Admin endpoint access by non-admin
 
@@ -242,13 +242,13 @@ Wire these into CI. A regression here is a CVE.
 
 - **`@login_required` and calling it done.** That's authentication, not authorization.
 - **Authorization in the controller only.** A new service that reuses the model bypasses the controller; auth needs to be near the data.
-- **403 leaking object existence.** Use 404 for "this isn't yours" — denies enumeration.
+- **403 leaking object existence.** Use 404 for "this isn't yours" - denies enumeration.
 - **Trusting the gateway's `X-Forwarded-User` header.** Anyone can send that header; only trust it after the gateway has stripped any client-supplied version.
 - **GraphQL with introspection enabled in production.** Lets attackers discover every field, including the ones with missing checks.
 
 ## Going further
 
-- [OWASP — Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
-- [Google's Zanzibar paper](https://research.google/pubs/pub48190/) — the canonical text on relationship-based access control at scale
-- [PortSwigger — Access Control](https://portswigger.net/web-security/access-control)
-- [HackerOne's IDOR hacktivity](https://hackerone.com/hacktivity?querystring=idor) — read the public disclosures
+- [OWASP - Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+- [Google's Zanzibar paper](https://research.google/pubs/pub48190/) - the canonical text on relationship-based access control at scale
+- [PortSwigger - Access Control](https://portswigger.net/web-security/access-control)
+- [HackerOne's IDOR hacktivity](https://hackerone.com/hacktivity?querystring=idor) - read the public disclosures

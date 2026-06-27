@@ -1,4 +1,4 @@
-# Week 11: Defense — Insecure Deserialization
+# Week 11: Defense - Insecure Deserialization
 
 You've seen the chains in [attack.md](attack.md). The defenses are unusually clean: this is a class where the right answer is mostly "don't do the thing."
 
@@ -8,9 +8,9 @@ You've seen the chains in [attack.md](attack.md). The defenses are unusually cle
 
 > **Never deserialize untrusted bytes with formats that carry behavior.**
 
-If you're sending data over the wire, use a *data format* — JSON, Protobuf, MsgPack — not a *behavior-carrying serializer* — Java `ObjectInputStream`, Python pickle, PHP `unserialize`, .NET `BinaryFormatter`.
+If you're sending data over the wire, use a *data format* - JSON, Protobuf, MsgPack - not a *behavior-carrying serializer* - Java `ObjectInputStream`, Python pickle, PHP `unserialize`, .NET `BinaryFormatter`.
 
-If you must deserialize behavior-carrying formats (legacy compatibility, perf), make sure the bytes are *from your own code*, not from an untrusted source — and validate integrity with a signature.
+If you must deserialize behavior-carrying formats (legacy compatibility, perf), make sure the bytes are *from your own code*, not from an untrusted source - and validate integrity with a signature.
 
 ## Defense 1: Use safe formats
 
@@ -23,11 +23,11 @@ If you must deserialize behavior-carrying formats (legacy compatibility, perf), 
 | Cache (Redis) | JSON, MsgPack |
 | Session cookies | Signed JSON (Django's `signed_cookies` style), or opaque server-side |
 
-JSON is the easy answer for ~90% of cases. The remaining 10% (binary data, large structured data) goes to Protobuf or similar — also behavior-free.
+JSON is the easy answer for ~90% of cases. The remaining 10% (binary data, large structured data) goes to Protobuf or similar - also behavior-free.
 
 ## Defense 2: Validate with a schema
 
-Just choosing JSON isn't enough — the receiver should validate the shape:
+Just choosing JSON isn't enough - the receiver should validate the shape:
 
 ```python
 from pydantic import BaseModel
@@ -54,7 +54,7 @@ Pydantic raises on shape mismatch. Equivalent in other languages:
 Schema-first design prevents:
 
 - Class injection (the schema doesn't permit `$type`)
-- Extra fields (mass assignment — Week 03)
+- Extra fields (mass assignment - Week 03)
 - Type confusion ("amount" arrives as a list)
 
 ## Defense 3: Sign the bytes if you can't change the format
@@ -79,14 +79,14 @@ def safe_loads(data, key):
 
 Two important caveats:
 
-- **Validate signature BEFORE deserialization.** The vulnerable code does `unserialize($_COOKIE['x'])` then "validates" — the deserialization already ran.
+- **Validate signature BEFORE deserialization.** The vulnerable code does `unserialize($_COOKIE['x'])` then "validates" - the deserialization already ran.
 - **HMAC key must be a real secret.** Hardcoded keys in code that's accessible are useless.
 
 ## Defense 4: Allow-list classes when format is fixed
 
-If you genuinely need to deserialize Java/etc. behavior-carrying formats — *with* signatures *and* trusted source — restrict which classes can be reconstructed:
+If you genuinely need to deserialize Java/etc. behavior-carrying formats - *with* signatures *and* trusted source - restrict which classes can be reconstructed:
 
-### Java — JEP 290 + ObjectInputFilter
+### Java - JEP 290 + ObjectInputFilter
 
 ```java
 ObjectInputStream ois = new ObjectInputStream(stream);
@@ -102,9 +102,9 @@ ois.setObjectInputFilter(filter -> {
 
 Or set a global filter via `jdk.serialFilter` system property.
 
-### Python pickle — don't. Switch to JSON.
+### Python pickle - don't. Switch to JSON.
 
-> ⚠️ **This section is for completeness; do not ship a `find_class` allow-list as your defense.** Pickle's `REDUCE` opcode lets an attacker craft payloads whose `__reduce__` returns `(allowed_callable, (attacker_iter,))` — the iterator can itself be a class call into anything else in the allow-list, and chains across allow-listed classes have been demonstrated. The right answer is: **change the data format to JSON** (or msgpack with no extension types, or protobuf). The format is the defense.
+> ⚠️ **This section is for completeness; do not ship a `find_class` allow-list as your defense.** Pickle's `REDUCE` opcode lets an attacker craft payloads whose `__reduce__` returns `(allowed_callable, (attacker_iter,))` - the iterator can itself be a class call into anything else in the allow-list, and chains across allow-listed classes have been demonstrated. The right answer is: **change the data format to JSON** (or msgpack with no extension types, or protobuf). The format is the defense.
 
 If you absolutely cannot change the format, here is the minimal shape:
 
@@ -129,7 +129,7 @@ SafeUnpickler(stream).load()
 
 Even this is research-territory: bypass papers exist for restrictive allow-lists when combined with pickle's stack-machine semantics. The robust answer is still: **don't use pickle for data from outside the trust boundary.**
 
-### .NET — drop BinaryFormatter
+### .NET - drop BinaryFormatter
 
 There's no good way to safely use `BinaryFormatter` with untrusted input. Microsoft's official guidance is: replace it. Use `System.Text.Json` or Protobuf.
 
@@ -148,9 +148,9 @@ An RCE in that sandbox can't reach anything useful.
 
 Java's deserialization vulnerabilities are mostly in libraries (Apache Commons Collections, Spring AOP, etc.). Keep dependencies current:
 
-- **Dependabot / Renovate** — auto-PR new versions
-- **SCA tools** — Snyk, Trivy, GitHub Advanced Security
-- **Known-vulnerable version flagging** — fail the build if a CVE-bearing version is included
+- **Dependabot / Renovate** - auto-PR new versions
+- **SCA tools** - Snyk, Trivy, GitHub Advanced Security
+- **Known-vulnerable version flagging** - fail the build if a CVE-bearing version is included
 
 For Java specifically, [JEP 290](https://openjdk.org/jeps/290) (Filter Incoming Serialization Data) ships with JDK 9+. Enable a global filter.
 
@@ -270,8 +270,8 @@ def test_no_pickle_imports(monkeypatch):
 
 ## Going further
 
-- [PortSwigger — Insecure deserialization](https://portswigger.net/web-security/deserialization)
-- [OWASP — Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
-- [Frohoff & Lawrence — Java Deserialization Vulnerabilities (AppSec USA 2015)](https://frohoff.github.io/appseccali-marshalling-pickles/) — the talk that made everyone realize this was bad
-- [Foxglove Security — What do WebLogic, WebSphere, JBoss, Jenkins, OpenNMS, and your application have in common?](https://foxglovesecurity.com/2015/11/06/what-do-weblogic-websphere-jboss-jenkins-opennms-and-your-application-have-in-common-this-vulnerability/) — the seminal real-world chain writeup
-- [JEP 290 — Filter Incoming Serialization Data](https://openjdk.org/jeps/290)
+- [PortSwigger - Insecure deserialization](https://portswigger.net/web-security/deserialization)
+- [OWASP - Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
+- [Frohoff & Lawrence - Java Deserialization Vulnerabilities (AppSec USA 2015)](https://frohoff.github.io/appseccali-marshalling-pickles/) - the talk that made everyone realize this was bad
+- [Foxglove Security - What do WebLogic, WebSphere, JBoss, Jenkins, OpenNMS, and your application have in common?](https://foxglovesecurity.com/2015/11/06/what-do-weblogic-websphere-jboss-jenkins-opennms-and-your-application-have-in-common-this-vulnerability/) - the seminal real-world chain writeup
+- [JEP 290 - Filter Incoming Serialization Data](https://openjdk.org/jeps/290)

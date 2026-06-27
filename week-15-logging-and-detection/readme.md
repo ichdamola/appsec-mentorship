@@ -2,16 +2,16 @@
 
 ## 🎯 What you'll learn
 
-OWASP A09 — Security Logging and Monitoring Failures. You can't respond to what you can't see. This week takes the attack patterns from weeks 1-14 and asks: **what would have caught it in your logs?** The product is a set of detection rules and a sustainable alerting practice — not "more logs."
+OWASP A09 - Security Logging and Monitoring Failures. You can't respond to what you can't see. This week takes the attack patterns from weeks 1-14 and asks: **what would have caught it in your logs?** The product is a set of detection rules and a sustainable alerting practice - not "more logs."
 
 By the end of this week you'll be able to:
 
 - Design a structured logging schema for an HTTP-facing application
 - Know **what to log and what NOT to log** (passwords, full tokens, PII)
-- Write detection rules for the attack classes in weeks 1-14 — XSS, SQLi, IDOR, brute-force auth, BOLA enumeration, deserialization, Log4Shell-shaped payloads
-- Reason about **alerting fatigue** — why "more alerts" reduces security, and how to tune
+- Write detection rules for the attack classes in weeks 1-14 - XSS, SQLi, IDOR, brute-force auth, BOLA enumeration, deserialization, Log4Shell-shaped payloads
+- Reason about **alerting fatigue** - why "more alerts" reduces security, and how to tune
 - Stand up a tiny SIEM stack locally and write queries against it
-- Articulate the **handoff to incident response** — when does a finding become a ticket vs. a page
+- Articulate the **handoff to incident response** - when does a finding become a ticket vs. a page
 
 ## ⚠️ Scope reminder
 
@@ -84,19 +84,19 @@ Attack Mutillidae through Burp; ship its access logs to your SIEM; build detecti
    - Have a query that fires on the attack
    - Have a noise estimate (how many false positives per week in your lab traffic)
    - Have a severity ("page now" vs. "review tomorrow")
-5. **Read [attack.md](attack.md).** This week's "attack" is the attacker's *evasion of logging* — log gaps, log tampering, blind spots.
+5. **Read [attack.md](attack.md).** This week's "attack" is the attacker's *evasion of logging* - log gaps, log tampering, blind spots.
 6. **Read [defense.md](defense.md).** The detection rule library + alerting design.
 
 ## 📚 Required reading
 
 | Resource | Why | Time |
 |---|---|---|
-| [OWASP — Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) | What to log, what not | 25 min |
-| [OWASP — Security Logging and Monitoring Failures (A09:2021)](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/) | The category overview | 15 min |
-| [Sigma — generic SIEM detection rules](https://github.com/SigmaHQ/sigma) | Format for shareable detections | 20 min skim |
-| [Google SRE — Alerting Philosophy](https://sre.google/workbook/alerting-on-slos/) | Why most alerting is broken | 30 min |
+| [OWASP - Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) | What to log, what not | 25 min |
+| [OWASP - Security Logging and Monitoring Failures (A09:2021)](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/) | The category overview | 15 min |
+| [Sigma - generic SIEM detection rules](https://github.com/SigmaHQ/sigma) | Format for shareable detections | 20 min skim |
+| [Google SRE - Alerting Philosophy](https://sre.google/workbook/alerting-on-slos/) | Why most alerting is broken | 30 min |
 | [MITRE D3FEND](https://d3fend.mitre.org/) | Defensive techniques mapped against MITRE ATT&CK | 30 min skim |
-| [Florian Roth — Sigma rule writing guide](https://github.com/SigmaHQ/sigma/wiki/Rule-Creation-Guide) | The how | 25 min |
+| [Florian Roth - Sigma rule writing guide](https://github.com/SigmaHQ/sigma/wiki/Rule-Creation-Guide) | The how | 25 min |
 
 ## 💡 What you should already know
 

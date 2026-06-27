@@ -1,6 +1,6 @@
-# Week 08: Defense — Stopping SSRF
+# Week 08: Defense - Stopping SSRF
 
-You've turned SSRF into cloud-credential theft and internal-network access in [attack.md](attack.md). Defense requires multiple layers — a single URL validator will lose the bypass arms race.
+You've turned SSRF into cloud-credential theft and internal-network access in [attack.md](attack.md). Defense requires multiple layers - a single URL validator will lose the bypass arms race.
 
 ---
 
@@ -8,7 +8,7 @@ You've turned SSRF into cloud-credential theft and internal-network access in [a
 
 > **Don't validate the URL string. Validate the *destination IP* after resolution, and connect to that specific IP only.**
 
-Filtering URL strings is whack-a-mole. The right approach is to resolve DNS yourself, check the resulting IP against a denylist (or allow-list), then connect to that IP specifically — defeating DNS rebinding and most parser-confusion bypasses in one move.
+Filtering URL strings is whack-a-mole. The right approach is to resolve DNS yourself, check the resulting IP against a denylist (or allow-list), then connect to that IP specifically - defeating DNS rebinding and most parser-confusion bypasses in one move.
 
 ## Layer 1: Allow-list, not deny-list
 
@@ -103,13 +103,13 @@ class PinnedHostAdapter(requests.adapters.HTTPAdapter):
         return super().send(request, **kwargs)
 ```
 
-> ⚠️ **This is the shape, not a drop-in.** The HTTPS SNI / cert-validation handoff between the IP-pinned connection and the original hostname is subtle and varies across `urllib3` versions. In production, use a vetted helper (`ssrf-requests`, the SOCKS-style approach via a dedicated egress proxy, or `httpx`'s custom transport API) rather than rolling your own. The point of this snippet is to show *what defeats DNS rebinding* — single resolution + connect by IP — not to ship as-is.
+> ⚠️ **This is the shape, not a drop-in.** The HTTPS SNI / cert-validation handoff between the IP-pinned connection and the original hostname is subtle and varies across `urllib3` versions. In production, use a vetted helper (`ssrf-requests`, the SOCKS-style approach via a dedicated egress proxy, or `httpx`'s custom transport API) rather than rolling your own. The point of this snippet is to show *what defeats DNS rebinding* - single resolution + connect by IP - not to ship as-is.
 
 Key properties:
 
-- **Single DNS resolution.** Defeats DNS rebinding because the connect-time URL contains the IP, not the hostname — there is no second lookup.
+- **Single DNS resolution.** Defeats DNS rebinding because the connect-time URL contains the IP, not the hostname - there is no second lookup.
 - **Connect by IP.** What the URL parser saw is what gets contacted, byte for byte.
-- **No redirect following.** A 30x response is returned to the caller, who must explicitly opt in to following — and that next URL goes through the same validator.
+- **No redirect following.** A 30x response is returned to the caller, who must explicitly opt in to following - and that next URL goes through the same validator.
 
 ### Implementation note: SSRF-aware HTTP clients
 
@@ -132,13 +132,13 @@ Limit what your application servers can reach:
 
 | Egress destination | Should the app reach it? |
 |---|---|
-| External API providers (Stripe, Twilio) | Yes — allow specific FQDNs |
-| Your own internal services | Yes — via known internal IPs/DNS |
+| External API providers (Stripe, Twilio) | Yes - allow specific FQDNs |
+| Your own internal services | Yes - via known internal IPs/DNS |
 | Public internet | Probably not |
 | `169.254.169.254` (metadata) | Only via IMDSv2 token; block direct |
 | RFC1918 private ranges | Only specific known internal services |
 
-VPC security groups, AWS network firewalls, GCP firewall rules — all can express this.
+VPC security groups, AWS network firewalls, GCP firewall rules - all can express this.
 
 ### Proxy all egress
 
@@ -154,7 +154,7 @@ This centralizes the SSRF defense and gives you one place to update the allow-li
 
 ### Enforce IMDSv2 (AWS)
 
-IMDSv2 requires a PUT to get a token, then GET with the token in a header. Typical HTTP fetchers can't do this — they only do GET. Forcing IMDSv2 makes SSRF-to-metadata structurally hard.
+IMDSv2 requires a PUT to get a token, then GET with the token in a header. Typical HTTP fetchers can't do this - they only do GET. Forcing IMDSv2 makes SSRF-to-metadata structurally hard.
 
 ```
 # Make IMDSv2 required (not optional) on every EC2 instance
@@ -164,7 +164,7 @@ aws ec2 modify-instance-metadata-options \
   --http-put-response-hop-limit 1
 ```
 
-`--http-put-response-hop-limit 1` is the killer — the metadata service refuses to respond to requests that have been forwarded (hop count > 1). SSRF from a container fetching through the host can't reach the host's metadata.
+`--http-put-response-hop-limit 1` is the killer - the metadata service refuses to respond to requests that have been forwarded (hop count > 1). SSRF from a container fetching through the host can't reach the host's metadata.
 
 Set as an Organizational SCP. New instances default to IMDSv2-required.
 
@@ -214,7 +214,7 @@ If IMDSv2 is enforced, the only legitimate request to this IP is from the instan
 
 ### Signal 3: Spike in HTTP requests to unfamiliar hosts
 
-A workload that normally hits 5 destinations suddenly hits 500 — could be a scraper feature working as intended, or could be SSRF being abused for port-scanning.
+A workload that normally hits 5 destinations suddenly hits 500 - could be a scraper feature working as intended, or could be SSRF being abused for port-scanning.
 
 ```
 | stats dc(destination_host) as unique_destinations by application
@@ -307,8 +307,8 @@ def test_fetch_url_does_not_follow_redirects_to_private(client, admin_token):
 
 ## Going further
 
-- [PortSwigger — SSRF](https://portswigger.net/web-security/ssrf)
-- [OWASP — SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+- [PortSwigger - SSRF](https://portswigger.net/web-security/ssrf)
+- [OWASP - SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
 - [Capital One breach post-mortem](https://krebsonsecurity.com/2019/08/capital-one-data-theft-impacts-106m-people/)
-- [Orange Tsai — A new era of SSRF](https://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html) — the canonical SSRF research talk
-- [AWS — IMDSv2 documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html)
+- [Orange Tsai - A new era of SSRF](https://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html) - the canonical SSRF research talk
+- [AWS - IMDSv2 documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html)

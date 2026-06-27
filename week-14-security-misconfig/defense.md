@@ -1,6 +1,6 @@
-# Week 14: Defense — Security Misconfiguration & Vulnerable Components
+# Week 14: Defense - Security Misconfiguration & Vulnerable Components
 
-You exploited default-creds, debug pages, Log4Shell, and a handful of file-disclosure misconfigs in [attack.md](attack.md). The defenses here are unusually operational rather than code-level — and that's the point. **This class lives in build pipelines, deploy configs, and patching cadence, not in the application source.**
+You exploited default-creds, debug pages, Log4Shell, and a handful of file-disclosure misconfigs in [attack.md](attack.md). The defenses here are unusually operational rather than code-level - and that's the point. **This class lives in build pipelines, deploy configs, and patching cadence, not in the application source.**
 
 ---
 
@@ -10,12 +10,12 @@ You exploited default-creds, debug pages, Log4Shell, and a handful of file-discl
 
 If your `Dockerfile` pins `FROM ubuntu:20.04` and never gets rebuilt, you ship 2020-era CVEs forever. If `production.yml` lives only on a single VM, no one notices when DEBUG=True ends up there. Every config and every dependency needs the same review, lint, and CI treatment you give application code.
 
-## Defense 1: Sane defaults — pick "secure" over "convenient"
+## Defense 1: Sane defaults - pick "secure" over "convenient"
 
 ### Frameworks
 
 ```python
-# Django settings.py — production
+# Django settings.py - production
 DEBUG = False
 ALLOWED_HOSTS = ["example.com"]      # NOT "*"
 SECURE_SSL_REDIRECT = True
@@ -29,14 +29,14 @@ SECURE_HSTS_PRELOAD = True
 # universal-XSS browser bugs in the IE/early-Chrome era. Chrome 78+ removed
 # the feature; Firefox never supported it. OWASP and the Chromium team
 # recommend explicitly opting out via X-XSS-Protection: 0 (Django emits this
-# header only when the setting is explicitly True — leaving it False is the
-# safer default). The replacement is a strict CSP — see Week 06.
+# header only when the setting is explicitly True - leaving it False is the
+# safer default). The replacement is a strict CSP - see Week 06.
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 ```
 
 ```yaml
-# Spring Boot — application-prod.yml
+# Spring Boot - application-prod.yml
 management:
   endpoints:
     web:
@@ -58,7 +58,7 @@ server:
 ```
 
 ```javascript
-// Express — production
+// Express - production
 app.use(helmet());            // sets a dozen security headers in one line
 app.use(helmet.contentSecurityPolicy({...}));
 app.disable('x-powered-by');  // don't tell attackers "Express"
@@ -69,7 +69,7 @@ These should not be left as defaults *to remember to change*. They should be the
 ### Containers
 
 ```dockerfile
-FROM ubuntu:22.04   # NOT :latest — pin
+FROM ubuntu:22.04   # NOT :latest - pin
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
@@ -78,7 +78,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd -m -u 10001 app
 USER app
 
-# DON'T bake secrets — pass at runtime
+# DON'T bake secrets - pass at runtime
 # ENV DATABASE_PASSWORD=...   <-- never
 
 # Drop capabilities
@@ -88,10 +88,10 @@ USER app
 
 ### Cloud
 
-- S3 — enable Block Public Access at the account level. Specific publicness is opt-in per bucket.
-- IAM roles — least privilege per service; no `*:*` or `Resource: *` unless audited.
-- Default VPC — disable public IPs for new instances by default.
-- KMS — encrypt-at-rest by default for new volumes/buckets.
+- S3 - enable Block Public Access at the account level. Specific publicness is opt-in per bucket.
+- IAM roles - least privilege per service; no `*:*` or `Resource: *` unless audited.
+- Default VPC - disable public IPs for new instances by default.
+- KMS - encrypt-at-rest by default for new volumes/buckets.
 
 ## Defense 2: Patch process
 
@@ -124,12 +124,12 @@ A reasonable framework:
 | Medium | 90 days |
 | Low | Next maintenance cycle |
 
-The 24-hour target requires that you've practiced the deploy path on a Tuesday afternoon — not just in theory.
+The 24-hour target requires that you've practiced the deploy path on a Tuesday afternoon - not just in theory.
 
 ## Defense 3: SBOM + SCA in CI
 
 ```yaml
-# .github/workflows/security.yml — example
+# .github/workflows/security.yml - example
 name: Security scan
 on: [push, pull_request]
 jobs:
@@ -140,7 +140,7 @@ jobs:
       - name: Build
         run: docker build -t app:${{ github.sha }} .
       - name: Trivy filesystem
-        uses: aquasecurity/trivy-action@0.24.0   # pin — same lesson as ":latest" above
+        uses: aquasecurity/trivy-action@0.24.0   # pin - same lesson as ":latest" above
         with:
           scan-type: image
           image-ref: app:${{ github.sha }}
@@ -158,7 +158,7 @@ The shift here: vulnerable-version detection moves from "annual pen test" → "o
 
 ## Defense 4: Hardening baselines (CIS / DISA STIG)
 
-For every platform you run (Linux distros, Kubernetes, Docker, RDS, Nginx, Apache, IIS, Postgres, Mongo) there's a CIS Benchmark — a checklist of configuration items with severity. Mostly: disable defaults, restrict permissions, enable auditing.
+For every platform you run (Linux distros, Kubernetes, Docker, RDS, Nginx, Apache, IIS, Postgres, Mongo) there's a CIS Benchmark - a checklist of configuration items with severity. Mostly: disable defaults, restrict permissions, enable auditing.
 
 You don't read these top-to-bottom; you run them as a tool:
 
@@ -177,11 +177,11 @@ Integrate into CI so a hardening regression fails the build.
 
 Already covered in [Week 10 defense.md](../week-10-crypto-failures/defense.md). Recap in the context of misconfig:
 
-- Secrets in env vars (not source) — fine if env is provisioned by IaC + secret manager.
-- Secrets in a secret manager (Vault, AWS SM, GCP Secret Manager) — better, auditable.
-- Secrets in the Spring Boot Actuator `env` endpoint — disaster.
-- Secrets in heap dumps — disaster.
-- Secrets in error pages — disaster.
+- Secrets in env vars (not source) - fine if env is provisioned by IaC + secret manager.
+- Secrets in a secret manager (Vault, AWS SM, GCP Secret Manager) - better, auditable.
+- Secrets in the Spring Boot Actuator `env` endpoint - disaster.
+- Secrets in heap dumps - disaster.
+- Secrets in error pages - disaster.
 
 The deploy config matters more than the storage:
 
@@ -345,12 +345,12 @@ def test_no_known_critical_cves():
 
 ## Going further
 
-- [OWASP — Security Misconfiguration (A05:2021)](https://owasp.org/Top10/A05_2021-Security_Misconfiguration/)
-- [OWASP — Vulnerable and Outdated Components (A06:2021)](https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/)
+- [OWASP - Security Misconfiguration (A05:2021)](https://owasp.org/Top10/A05_2021-Security_Misconfiguration/)
+- [OWASP - Vulnerable and Outdated Components (A06:2021)](https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/)
 - [CIS Benchmarks index](https://www.cisecurity.org/cis-benchmarks/)
 - [Aqua Trivy docs](https://aquasecurity.github.io/trivy/)
 - [Renovate config reference](https://docs.renovatebot.com/configuration-options/)
-- [Spring Boot — Actuator security](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.endpoints.security)
-- [Django — Deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/)
-- [LunaSec — Log4Shell technical writeup](https://www.lunasec.io/docs/blog/log4j-zero-day/)
-- [LiveOverflow — Log4Shell walkthrough video](https://www.youtube.com/watch?v=7qoPDq41xhQ)
+- [Spring Boot - Actuator security](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.endpoints.security)
+- [Django - Deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/)
+- [LunaSec - Log4Shell technical writeup](https://www.lunasec.io/docs/blog/log4j-zero-day/)
+- [LiveOverflow - Log4Shell walkthrough video](https://www.youtube.com/watch?v=7qoPDq41xhQ)

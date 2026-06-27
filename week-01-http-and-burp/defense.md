@@ -1,4 +1,4 @@
-# Week 01: Defense — Stopping Reflected XSS
+# Week 01: Defense - Stopping Reflected XSS
 
 You've exploited it in [attack.md](attack.md). Now the harder, more useful half: how do you stop it, detect it when it gets through, and prove it stays fixed?
 
@@ -8,7 +8,7 @@ You've exploited it in [attack.md](attack.md). Now the harder, more useful half:
 
 > **Encode for the context you're outputting into. Never trust input filtering alone.**
 
-XSS happens when user-controlled input lands in a place where the browser parses it as code. The defense is to make sure the browser parses it as *data* — by encoding it correctly for the context (HTML body, HTML attribute, JavaScript string, URL, CSS).
+XSS happens when user-controlled input lands in a place where the browser parses it as code. The defense is to make sure the browser parses it as *data* - by encoding it correctly for the context (HTML body, HTML attribute, JavaScript string, URL, CSS).
 
 ## Context-specific encoding
 
@@ -20,11 +20,11 @@ XSS happens when user-controlled input lands in a place where the browser parses
 | URL | `<a href="${userInput}">` | Validate URL + use the appropriate URL escaper; reject `javascript:` schemes |
 | CSS value | `style="background:${userInput}"` | Don't. Allow-list a set of safe values instead |
 
-The wrong code looks reasonable. That's why this bug class won't die — it requires the developer to think about *output context*, not just "is this input clean?"
+The wrong code looks reasonable. That's why this bug class won't die - it requires the developer to think about *output context*, not just "is this input clean?"
 
 ## Use a templating engine that auto-escapes
 
-Modern frameworks default to safe output. Recognize when you're opting *out* of that protection — that's where bugs live:
+Modern frameworks default to safe output. Recognize when you're opting *out* of that protection - that's where bugs live:
 
 | Framework | Safe by default | "Trust me" escape hatch (DANGER) |
 |---|---|---|
@@ -73,9 +73,9 @@ Content-Security-Policy:
 
 Key principles:
 
-- **`script-src 'self' 'nonce-X'`** — only scripts from your origin OR scripts tagged with the per-request nonce can run. Inline `<script>alert(1)</script>` is blocked.
-- **`object-src 'none'`** — blocks `<object>` / `<embed>` plugins.
-- **`base-uri 'self'`** — prevents `<base href>` injection from rewriting relative URLs.
+- **`script-src 'self' 'nonce-X'`** - only scripts from your origin OR scripts tagged with the per-request nonce can run. Inline `<script>alert(1)</script>` is blocked.
+- **`object-src 'none'`** - blocks `<object>` / `<embed>` plugins.
+- **`base-uri 'self'`** - prevents `<base href>` injection from rewriting relative URLs.
 
 `unsafe-inline` defeats most of CSP's value for XSS prevention. Avoid it.
 
@@ -97,7 +97,7 @@ This doesn't prevent XSS, but it stops XSS from immediately becoming session the
 
 ---
 
-## Detection — what does this look like in logs?
+## Detection - what does this look like in logs?
 
 XSS exploit attempts leave fingerprints. Build detections at three layers.
 
@@ -120,7 +120,7 @@ index=web sourcetype=access_log
   | where count > 5
 ```
 
-False-positive rate is real — legitimate users sometimes paste HTML into searches. Tune by adding context (is this user already suspicious? is this a parameter that should never contain HTML?).
+False-positive rate is real - legitimate users sometimes paste HTML into searches. Tune by adding context (is this user already suspicious? is this a parameter that should never contain HTML?).
 
 ### Layer 2: CSP violation reports
 
@@ -141,7 +141,7 @@ Both are useful signals.
 
 ### Layer 3: WAF rules
 
-A WAF (Web Application Firewall — CloudFlare, AWS WAF, ModSecurity) ships with XSS rule packs. Useful as defense-in-depth; **never your only defense.** Every WAF rule has bypasses. Modsecurity's OWASP CRS rule 941 family is the open-source baseline.
+A WAF (Web Application Firewall - CloudFlare, AWS WAF, ModSecurity) ships with XSS rule packs. Useful as defense-in-depth; **never your only defense.** Every WAF rule has bypasses. Modsecurity's OWASP CRS rule 941 family is the open-source baseline.
 
 ---
 
@@ -183,7 +183,7 @@ Wire these into CI. Once a class of XSS is fixed, the test prevents regression.
 |---|---|
 | **Burp Suite (Active Scan)** | Sends probes during a crawl; flags reflected payloads |
 | **OWASP ZAP** | Free alternative to Burp; similar coverage |
-| **Semgrep** | Static analysis — finds the *insecure patterns* in source code (e.g. `dangerouslySetInnerHTML`, unescaped template substitution) |
+| **Semgrep** | Static analysis - finds the *insecure patterns* in source code (e.g. `dangerouslySetInnerHTML`, unescaped template substitution) |
 | **CodeQL** | Deeper static analysis with data-flow tracking |
 
 Run a SAST tool (Semgrep) in CI and a DAST tool (ZAP) on a staging deploy. Both find different bugs; you need both.
@@ -194,13 +194,13 @@ Run a SAST tool (Semgrep) in CI and a DAST tool (ZAP) on a staging deploy. Both 
 
 - **Allow-listing tags but not attributes.** `<a>` is "safe" until you allow `href="javascript:..."` or `onclick=...`.
 - **Filtering `<script>` and assuming you're done.** Twenty other tags trigger JS (`<img onerror>`, `<svg onload>`, `<iframe srcdoc>`, etc.).
-- **Encoding once, but the value passes through encoding-aware contexts.** Double-encoding bugs are common — sanitizer escapes once, framework escapes again on output → display breaks → developer "fixes" by skipping the framework's escape.
+- **Encoding once, but the value passes through encoding-aware contexts.** Double-encoding bugs are common - sanitizer escapes once, framework escapes again on output → display breaks → developer "fixes" by skipping the framework's escape.
 - **Trusting client-side validation.** All client-side checks can be bypassed (just don't run your JS). Server side is authoritative.
 - **Relying on CSP alone.** CSP catches some payloads, misses others (data-URI iframes, unsafe-inline allowances, JSONP endpoints). It's a layer, not a fix.
 
 ## Going further
 
-- [PortSwigger — XSS prevention](https://portswigger.net/web-security/cross-site-scripting/preventing)
-- [OWASP — XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
-- [Google Web Fundamentals — CSP](https://web.dev/csp/)
-- [Trusted Types](https://web.dev/trusted-types/) — browser API that makes XSS harder by requiring all DOM-sink writes to be explicitly trusted
+- [PortSwigger - XSS prevention](https://portswigger.net/web-security/cross-site-scripting/preventing)
+- [OWASP - XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+- [Google Web Fundamentals - CSP](https://web.dev/csp/)
+- [Trusted Types](https://web.dev/trusted-types/) - browser API that makes XSS harder by requiring all DOM-sink writes to be explicitly trusted

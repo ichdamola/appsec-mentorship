@@ -1,4 +1,4 @@
-# Week 16: Worked example — Threat Modeling Mentorbase
+# Week 16: Worked example - Threat Modeling Mentorbase
 
 > No exploitation labs this week. The "attack" here is the *thinking like an attacker* part of design review.
 
@@ -78,7 +78,7 @@ Trust boundaries:
 | Public internet → CloudFront/WAF | All input untrusted; WAF rules first line |
 | CloudFront → Django API | Should require authenticated requests beyond `/healthz` |
 | Django → Postgres | Mutual-TLS, separate VPC subnet |
-| Django → Stripe | API key crossing boundary — protect that key |
+| Django → Stripe | API key crossing boundary - protect that key |
 | Google SSO callback → Django | The `id_token` is the trust transfer; verify aud, iss, sig, exp |
 
 ## Step 2: What can go wrong? STRIDE per component
@@ -135,7 +135,7 @@ STRIDE applied to each box and arrow:
 |---|---|---|
 | Spoofing | Phished session cookie replayed | High |
 | Tampering | MITM on user's network without HSTS | High (Week 10) |
-| Repudiation | User claims "I didn't make this transfer" — without device fingerprint | Medium |
+| Repudiation | User claims "I didn't make this transfer" - without device fingerprint | Medium |
 | Info disclosure | Credentials in URL query strings (cached in browser history) | Medium |
 | DoS | DDoS exhausts CloudFront-allowed origin requests | Medium |
 | Elevation of privilege | XSS payload steals session token (Week 06) | High |
@@ -146,12 +146,12 @@ STRIDE applied to each box and arrow:
 |---|---|---|
 | Spoofing | Webhook callback from non-Stripe IP impersonates Stripe | Critical |
 | Tampering | Modified webhook body (signature not verified) | Critical |
-| Repudiation | "Stripe payment succeeded but our DB says it didn't" — no idempotency key | High |
+| Repudiation | "Stripe payment succeeded but our DB says it didn't" - no idempotency key | High |
 | Info disclosure | Stripe key in Django logs / Sentry traces | Critical |
 | DoS | Retry storm overwhelms Stripe rate limit | Medium |
 | Elevation of privilege | Stripe live-key vs test-key confusion lets test transactions move real money | High |
 
-The exercise — done with discipline for every component — produces 50-150 threats for a typical web app. That's the right number. You're not going to fix them all; you're going to pick the top N.
+The exercise - done with discipline for every component - produces 50-150 threats for a typical web app. That's the right number. You're not going to fix them all; you're going to pick the top N.
 
 ## Step 3: Attack trees for high-value flows
 
@@ -209,9 +209,9 @@ GOAL: Attacker controls victim mentor's account
 
 The tree exists to find paths you haven't defended yet. Most well-designed apps cover paths 1-2. Paths 3, 4, 5 are where the actual breach reports live.
 
-## Step 4: Prioritize — DREAD-light scoring
+## Step 4: Prioritize - DREAD-light scoring
 
-Pure DREAD (Damage, Reproducibility, Exploitability, Affected users, Discoverability — 1-10 each) is famously noisy. Modern practice: rate threats on a simple matrix:
+Pure DREAD (Damage, Reproducibility, Exploitability, Affected users, Discoverability - 1-10 each) is famously noisy. Modern practice: rate threats on a simple matrix:
 
 | | Likelihood: Low | Medium | High |
 |---|---|---|---|
@@ -237,13 +237,13 @@ The rest of the threat list goes into the backlog with the same fields. Quarterl
 Validation:
 
 - **Coverage**: every component has a STRIDE row, even if it's "N/A: read-only static asset, no input."
-- **Concreteness**: every threat names a specific endpoint, library, or flow — not "the system might be hacked."
+- **Concreteness**: every threat names a specific endpoint, library, or flow - not "the system might be hacked."
 - **Actionable**: every fix is assigned to someone with a date or "accept-with-tracking."
 - **Re-visit**: schedule a re-threat-model on architecture change (new third party, new auth flow, new data domain).
 
-A threat model that never gets re-opened isn't a threat model — it's a doc.
+A threat model that never gets re-opened isn't a threat model - it's a doc.
 
-## Beyond STRIDE — other frameworks
+## Beyond STRIDE - other frameworks
 
 | Framework | When to use |
 |---|---|
@@ -258,20 +258,20 @@ STRIDE is the right default. The others apply when STRIDE doesn't cover the rele
 
 ## Common pitfalls
 
-- **Threat-modeling theater** — generating a doc, getting it signed, never re-opening it. The doc is a snapshot; the work is the practice.
-- **No engineer in the room** — security-only sessions miss the implementation realities. Devs in the session catch "we already do that" or "that's actually hard."
-- **Trying to model the whole org** — model components, not your entire architecture. The session that takes a week produces a doc no one reads.
-- **Skipping low-severity threats** — they accumulate; they're often what an attacker actually chains.
-- **No "accept and track" outcome** — sometimes the right action is "accept the risk for now." That's still a decision; document it.
+- **Threat-modeling theater** - generating a doc, getting it signed, never re-opening it. The doc is a snapshot; the work is the practice.
+- **No engineer in the room** - security-only sessions miss the implementation realities. Devs in the session catch "we already do that" or "that's actually hard."
+- **Trying to model the whole org** - model components, not your entire architecture. The session that takes a week produces a doc no one reads.
+- **Skipping low-severity threats** - they accumulate; they're often what an attacker actually chains.
+- **No "accept and track" outcome** - sometimes the right action is "accept the risk for now." That's still a decision; document it.
 
-## Closing — what comes after Week 16
+## Closing - what comes after Week 16
 
 Threat modeling is one thread of a mature AppSec program. After this curriculum:
 
-- **Train engineers** on this curriculum (or similar) — the security team can't be the bottleneck.
-- **Continuous AppSec** — bug bounty (HackerOne, Bugcrowd, Intigriti), DAST, SAST, dependency scanning all running in CI.
-- **Red team** — internal or hired, periodically simulates real attackers against your detections from Week 15.
-- **Specialization** — pick a depth: mobile AppSec, cloud security (CNAPP/CSPM), AppSec engineering for a specific stack, detection engineering, IR/forensics.
-- **Community** — DEF CON AppSec Village, OWASP local chapters, Cloud Native Security WG, conferences (Black Hat, DEF CON, Nullcon, Hack in the Box).
+- **Train engineers** on this curriculum (or similar) - the security team can't be the bottleneck.
+- **Continuous AppSec** - bug bounty (HackerOne, Bugcrowd, Intigriti), DAST, SAST, dependency scanning all running in CI.
+- **Red team** - internal or hired, periodically simulates real attackers against your detections from Week 15.
+- **Specialization** - pick a depth: mobile AppSec, cloud security (CNAPP/CSPM), AppSec engineering for a specific stack, detection engineering, IR/forensics.
+- **Community** - DEF CON AppSec Village, OWASP local chapters, Cloud Native Security WG, conferences (Black Hat, DEF CON, Nullcon, Hack in the Box).
 
 Now read [defense.md](defense.md) for SDLC-integration patterns.

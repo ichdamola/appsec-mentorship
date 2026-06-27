@@ -1,4 +1,4 @@
-# Week 04: Attack walkthrough — Authentication Failures
+# Week 04: Attack walkthrough - Authentication Failures
 
 > ⚠️ **Lab only.** Never run authentication attacks against systems you don't own.
 
@@ -33,7 +33,7 @@ Tell them apart in real traffic, because the defense for each is different. A te
 
 ## Attack 1: Account enumeration
 
-Before brute-forcing, you need targets. Account enumeration is the recon step — figuring out which usernames exist.
+Before brute-forcing, you need targets. Account enumeration is the recon step - figuring out which usernames exist.
 
 ### Enumeration via different responses
 
@@ -55,7 +55,7 @@ You've just enumerated. Try a list of common emails and harvest the ones that sa
 
 ### Enumeration via subtle differences
 
-A patched app returns the same error message in both cases — but the **response time differs**:
+A patched app returns the same error message in both cases - but the **response time differs**:
 
 | Username | Response time |
 |---|---|
@@ -73,7 +73,7 @@ Valid user, wrong password: {"error": "auth_failed", "remaining_attempts": 4}
 Invalid user:               {"error": "auth_failed"}
 ```
 
-Burp's "Logger++" or the built-in Comparer makes this obvious — sort responses by length.
+Burp's "Logger++" or the built-in Comparer makes this obvious - sort responses by length.
 
 ### Enumeration via password reset
 
@@ -169,7 +169,7 @@ If the rate limiter keys on the *literal* username string but the auth backend n
 Some apps lock the account after N bad attempts. An attacker:
 
 1. Tries 10 passwords for `alice` → account locked.
-2. Tries `alice` with the correct password — still locked, returns "account locked."
+2. Tries `alice` with the correct password - still locked, returns "account locked."
 3. The "account locked" response leaks that account-locked is a *valid* state.
 
 The Mitigation: lock the **session/IP**, not the account. Or use throttling instead of lockout.
@@ -193,11 +193,11 @@ for email, password in leaked_credentials:
         valid_creds.append((email, password))
 ```
 
-Defenses based on per-user rate limits don't help — each user is only tried once. The attacker is **wide, not deep.**
+Defenses based on per-user rate limits don't help - each user is only tried once. The attacker is **wide, not deep.**
 
 Real stuffing tools:
 
-- **Sentry MBA / OpenBullet** — automation frameworks with configurable per-target "configs"
+- **Sentry MBA / OpenBullet** - automation frameworks with configurable per-target "configs"
 - Residential-proxy networks rotate IPs
 - Headless browsers solve CAPTCHAs via 3rd-party CAPTCHA solving services
 
@@ -216,9 +216,9 @@ carol / Password2026
 
 Common passwords: `Password<year>`, `Welcome<year>`, the company name + year, `Summer<year>!`.
 
-Rate limits per username allow this trivially. Defense: detect *the same password being tried across users from one source* — that's the spray pattern.
+Rate limits per username allow this trivially. Defense: detect *the same password being tried across users from one source* - that's the spray pattern.
 
-## Attack 5: MFA bypass — brute force
+## Attack 5: MFA bypass - brute force
 
 The 6-digit TOTP code at MFA. 1,000,000 possibilities. If the app doesn't rate limit the *MFA verification* step:
 
@@ -234,7 +234,7 @@ At a few hundred requests/sec, you exhaust the space in under an hour. The PortS
 
 The fix is obvious in retrospect: rate-limit MFA verification per session, lock after N attempts.
 
-## Attack 6: MFA bypass — recovery code abuse
+## Attack 6: MFA bypass - recovery code abuse
 
 MFA recovery codes (the "save these in case you lose your phone" codes) are often:
 
@@ -245,19 +245,19 @@ MFA recovery codes (the "save these in case you lose your phone" codes) are ofte
 
 Stealing or guessing a recovery code circumvents MFA without needing to compromise the device.
 
-## Attack 7: MFA bypass — fallback channel
+## Attack 7: MFA bypass - fallback channel
 
 A user with MFA enabled forgets their second factor. The "I lost my phone" link triggers an SMS recovery, an email recovery, or a security-question flow.
 
 The MFA's actual strength = the weakest of these fallback channels. If the fallback is email and the email account isn't itself MFA-protected, attacker steals email → triggers MFA reset → no MFA.
 
-## Attack 8: MFA bypass — push fatigue
+## Attack 8: MFA bypass - push fatigue
 
 In a push-notification MFA flow ("approve this login on your phone"):
 
 1. Attacker has valid username+password (from a previous compromise).
 2. Attacker logs in repeatedly. Each attempt fires a push to the victim.
-3. Victim taps "approve" out of annoyance — or while half-asleep.
+3. Victim taps "approve" out of annoyance - or while half-asleep.
 
 Real-world. The 2022 Uber breach used exactly this pattern.
 

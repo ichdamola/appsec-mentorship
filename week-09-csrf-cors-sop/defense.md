@@ -1,4 +1,4 @@
-# Week 09: Defense — CSRF, SameSite, SOP, CORS
+# Week 09: Defense - CSRF, SameSite, SOP, CORS
 
 You've exploited the gaps in [attack.md](attack.md). Now the layered defenses.
 
@@ -18,7 +18,7 @@ No single mechanism catches everything. Modern apps stack SameSite (browser-enfo
 Set-Cookie: session=abc; HttpOnly; Secure; SameSite=Lax; Path=/
 ```
 
-`Lax` is the modern browser default — even if you forget to set it, Chrome assumes Lax for cookies older than 2 minutes. It blocks:
+`Lax` is the modern browser default - even if you forget to set it, Chrome assumes Lax for cookies older than 2 minutes. It blocks:
 
 - Cross-site form POSTs
 - Cross-site `fetch()` (`credentials: 'include'`)
@@ -28,7 +28,7 @@ It does *not* block top-level GET navigation. So:
 
 **Rule:** **Never** change state via GET. Combined with `SameSite=Lax`, no normal CSRF works.
 
-Use `SameSite=Strict` for cookies that authenticate truly high-value actions (banking transactions). Trade: a user clicking your link from email isn't logged in yet — has to log in. Acceptable for some products.
+Use `SameSite=Strict` for cookies that authenticate truly high-value actions (banking transactions). Trade: a user clicking your link from email isn't logged in yet - has to log in. Acceptable for some products.
 
 ### Defense 2: Synchronizer token pattern (the canonical CSRF defense)
 
@@ -124,7 +124,7 @@ def csrf_check(request):
         raise CSRFError
 ```
 
-The Origin header is set by the browser, not user code, and can't be spoofed cross-origin from a normal page. Sec-Fetch-Site is even harder to forge — only browser code sets it.
+The Origin header is set by the browser, not user code, and can't be spoofed cross-origin from a normal page. Sec-Fetch-Site is even harder to forge - only browser code sets it.
 
 This works as a primary defense for state-changing endpoints, especially in API contexts where token-based CSRF is awkward.
 
@@ -136,11 +136,11 @@ If the API:
 - Rejects requests without that exact Content-Type
 - Validates `Origin` header
 
-…then classic CSRF is structurally impossible — a form can't send `Content-Type: application/json` without preflight, and preflight requires CORS allow.
+…then classic CSRF is structurally impossible - a form can't send `Content-Type: application/json` without preflight, and preflight requires CORS allow.
 
 But: **don't rely on this alone.** Add SameSite cookies and Origin checks. Defense in depth.
 
-## CORS — done right
+## CORS - done right
 
 ### The minimal correct CORS
 
@@ -201,7 +201,7 @@ Reduces preflight overhead. The cache key includes the requesting origin and the
 | HTTP origins in allow-list | HTTPS-only |
 | Missing `Vary: Origin` | Add it (cache poisoning protection) |
 
-## Defense in depth — the modern stack
+## Defense in depth - the modern stack
 
 For an authenticated app endpoint that changes state, the layers in 2026 are:
 
@@ -252,7 +252,7 @@ Real users very rarely hit this (token gets out of sync on tab restoration, brow
    and referer not matches "^https://(app|admin)\.example/"
 ```
 
-Mismatched signals — either a misconfigured CDN/proxy or an attacker setting `Origin` manually (older browsers).
+Mismatched signals - either a misconfigured CDN/proxy or an attacker setting `Origin` manually (older browsers).
 
 ### Signal 4: 'null' Origin in production
 
@@ -261,7 +261,7 @@ Mismatched signals — either a misconfigured CDN/proxy or an attacker setting `
 | stats count by endpoint, status
 ```
 
-The only legitimate sources of `null` Origin are sandboxed iframes and file:// URLs — vanishingly rare in production traffic. Spike = attack.
+The only legitimate sources of `null` Origin are sandboxed iframes and file:// URLs - vanishingly rare in production traffic. Spike = attack.
 
 ---
 
@@ -280,13 +280,13 @@ The only legitimate sources of `null` Origin are sandboxed iframes and file:// U
 
 ```python
 def test_state_change_requires_csrf_token(client, alice_token):
-    # Without token — must fail
+    # Without token - must fail
     response = client.post("/api/profile",
                            json={"email": "new@example.com"},
                            headers={"Authorization": f"Bearer {alice_token}"})
     assert response.status_code == 403
 
-    # With token — must succeed
+    # With token - must succeed
     token = client.get("/api/csrf-token").json()["token"]
     response = client.post("/api/profile",
                            json={"email": "new@example.com"},
@@ -327,21 +327,21 @@ def test_samesite_lax_on_session_cookie(client):
 
 ## Related: a correct CSP
 
-This week's defenses (CSRF tokens, SameSite, CORS allow-list) handle the cross-origin **request** problem. The cross-origin **script execution** problem (XSS) needs a strict Content-Security-Policy in addition — see Week 06's `script-src 'nonce-X' 'strict-dynamic'` recipe. The two layers stack: CORS controls "can this origin call my API," CSP controls "what code is allowed to run in my page." A CSP that just sets `script-src 'self'` will, for instance, break DOMPurify loaded from a CDN; the nonce + strict-dynamic recipe in Week 06 is the production-quality form.
+This week's defenses (CSRF tokens, SameSite, CORS allow-list) handle the cross-origin **request** problem. The cross-origin **script execution** problem (XSS) needs a strict Content-Security-Policy in addition - see Week 06's `script-src 'nonce-X' 'strict-dynamic'` recipe. The two layers stack: CORS controls "can this origin call my API," CSP controls "what code is allowed to run in my page." A CSP that just sets `script-src 'self'` will, for instance, break DOMPurify loaded from a CDN; the nonce + strict-dynamic recipe in Week 06 is the production-quality form.
 
 ## Common mistakes when defending
 
 - **Treating SameSite as the only defense.** Method-override bypass demolishes it.
 - **CSRF tokens not tied to the session.** Attacker grabs a token from their account, paste into CSRF page.
 - **Origin reflection in CORS.** Tempting because "it works"; instantly exploitable.
-- **No `Vary: Origin` header.** Cache poisoning — CDNs serve cached responses meant for one origin to another.
+- **No `Vary: Origin` header.** Cache poisoning - CDNs serve cached responses meant for one origin to another.
 - **Trusting `Referer` as the primary defense.** Easy to omit, easy to confuse, deprecated as a security signal.
 
 ## Going further
 
-- [PortSwigger — CSRF](https://portswigger.net/web-security/csrf)
-- [PortSwigger — CORS](https://portswigger.net/web-security/cors)
-- [OWASP — CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
-- [Web.dev — SameSite cookies](https://web.dev/samesite-cookies-explained/)
-- [Web.dev — Fetch metadata](https://web.dev/fetch-metadata/)
-- [Google — Cross-Origin Isolation](https://web.dev/coop-coep/)
+- [PortSwigger - CSRF](https://portswigger.net/web-security/csrf)
+- [PortSwigger - CORS](https://portswigger.net/web-security/cors)
+- [OWASP - CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
+- [Web.dev - SameSite cookies](https://web.dev/samesite-cookies-explained/)
+- [Web.dev - Fetch metadata](https://web.dev/fetch-metadata/)
+- [Google - Cross-Origin Isolation](https://web.dev/coop-coep/)

@@ -84,7 +84,7 @@ flowchart LR
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
-| **[Burp Suite Community](https://portswigger.net/burp/communitydownload)** | Intercepting proxy — the AppSec tester's primary tool | Free; Pro is great but Community is enough for this curriculum |
+| **[Burp Suite Community](https://portswigger.net/burp/communitydownload)** | Intercepting proxy - the AppSec tester's primary tool | Free; Pro is great but Community is enough for this curriculum |
 | **[Docker](https://www.docker.com/)** | Local labs (DVWA, Juice Shop, custom apps) | Compose files included per week |
 | **A modern browser + DevTools** | Inspecting requests, debugging client-side JS | Firefox or Chrome |
 | **[PortSwigger Web Security Academy](https://portswigger.net/web-security)** | Free interactive labs by the makers of Burp | Account required (free) |
@@ -98,7 +98,7 @@ Open the week's folder. You'll find three files:
 | File | What it's for |
 |------|---------------|
 | `readme.md` | The **topic + lab setup**. What you'll learn, how to spin up the lab, recommended reading. Try it yourself first. |
-| `attack.md` | The **exploit walkthrough**. Step-by-step exploitation in the lab — what to send, what to observe, common variants. |
+| `attack.md` | The **exploit walkthrough**. Step-by-step exploitation in the lab - what to send, what to observe, common variants. |
 | `defense.md` | The **detection + remediation**. What this attack looks like in logs, how to detect it, secure-coding patterns, automated tests. |
 
 **Recommended flow:**
@@ -106,7 +106,7 @@ Open the week's folder. You'll find three files:
 1. Read the `readme.md` and spin up the lab.
 2. **Try to exploit it yourself first.** Even if you don't fully succeed, struggle for 30 minutes. The struggle is the learning.
 3. Open `attack.md` to compare your approach.
-4. Read `defense.md` last — pay close attention to the detection signatures and secure-coding patterns.
+4. Read `defense.md` last - pay close attention to the detection signatures and secure-coding patterns.
 
 ## 🚀 Getting Started
 
@@ -125,11 +125,11 @@ Open the week's folder. You'll find three files:
 
 ## 📚 Recommended Reading
 
-- *The Web Application Hacker's Handbook* — still the canonical text
-- *Real-World Bug Hunting* — Pete Yaworski, with real disclosure stories
-- [OWASP Top 10 (2021)](https://owasp.org/Top10/) — the framing the industry uses
-- [PortSwigger Web Security Academy](https://portswigger.net/web-security) — free, exhaustive
-- [Google's Bughunter University](https://bughunters.google.com/learn) — modern, well-curated
+- *The Web Application Hacker's Handbook* - still the canonical text
+- *Real-World Bug Hunting* - Pete Yaworski, with real disclosure stories
+- [OWASP Top 10 (2021)](https://owasp.org/Top10/) - the framing the industry uses
+- [PortSwigger Web Security Academy](https://portswigger.net/web-security) - free, exhaustive
+- [Google's Bughunter University](https://bughunters.google.com/learn) - modern, well-curated
 
 ## 🔗 Contributing
 

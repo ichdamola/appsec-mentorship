@@ -1,4 +1,4 @@
-# Week 07: Attack walkthrough — SSTI & Command Injection
+# Week 07: Attack walkthrough - SSTI & Command Injection
 
 > ⚠️ **Lab only.**
 
@@ -39,7 +39,7 @@ ${7*7}       → 49 ?       → Velocity, Freemarker, JS template literals
 
 If the response contains `49`, you've confirmed SSTI **and** identified the engine.
 
-If you get `7*7` echoed literally, the field is HTML-escaped — no SSTI. (Note: HTML escaping doesn't prevent SSTI because the evaluation happens *before* HTML escaping. If you see `49`, the engine ran.)
+If you get `7*7` echoed literally, the field is HTML-escaped - no SSTI. (Note: HTML escaping doesn't prevent SSTI because the evaluation happens *before* HTML escaping. If you see `49`, the engine ran.)
 
 ### Step 1: Identify the engine precisely
 
@@ -56,7 +56,7 @@ Different engines have different escape hatches. Probe with engine-specific synt
 
 Once you've identified the engine, look up its known RCE chain.
 
-### Step 2: Jinja2 RCE chain — the canonical one
+### Step 2: Jinja2 RCE chain - the canonical one
 
 Jinja2's sandboxing is famously weak. The standard chain walks the Python object graph from any string to `subprocess`:
 
@@ -69,7 +69,7 @@ Breakdown:
 - `''.__class__` → `<class 'str'>`
 - `.__mro__` → method resolution order (the inheritance chain)
 - `.__mro__[1]` → `<class 'object'>` (the base of everything in Python)
-- `.__subclasses__()` → **every class loaded in the interpreter** — a list of hundreds of classes
+- `.__subclasses__()` → **every class loaded in the interpreter** - a list of hundreds of classes
 
 Find a useful class in that list (in a real lab you'd enumerate; common targets are `subprocess.Popen` or `os._wrap_close`). Then call it:
 
@@ -225,7 +225,7 @@ The PortSwigger "Blind OS command injection with time delays" lab is the canonic
 
 ### Step 3: Argument injection (the subtle one)
 
-When a developer correctly uses `subprocess.run(["tool", user_input])` — splitting args, no shell — they might *think* they're safe. Sometimes they're not.
+When a developer correctly uses `subprocess.run(["tool", user_input])` - splitting args, no shell - they might *think* they're safe. Sometimes they're not.
 
 If `user_input` starts with `-`, it's an option to the tool:
 
@@ -257,7 +257,7 @@ subprocess.run(["zip", user_zipname, "data.txt"])
 
 `user_zipname = "@/etc/passwd"` → some versions of `zip` read the file list from the file you name with `@`. You just dumped passwd into a zip the attacker downloads.
 
-This is the class of bugs that's "I used a list, so I'm safe" — wrong. The list separated args, but each arg is still attacker-controlled and can carry tool-specific behavior.
+This is the class of bugs that's "I used a list, so I'm safe" - wrong. The list separated args, but each arg is still attacker-controlled and can carry tool-specific behavior.
 
 ### Step 5: Command injection via filename
 
@@ -272,7 +272,7 @@ storage.put(f"uploads/{filename}", request.files["upload"].read())
 subprocess.run(f"convert uploads/{filename} thumbs/thumb.jpg", shell=True)
 ```
 
-If `filename = "x.png; rm -rf /"`, the storage handler accepts it, the worker concatenates it. Injection at a different stage from the input. **Sanitize at the boundary — never trust the filename later.**
+If `filename = "x.png; rm -rf /"`, the storage handler accepts it, the worker concatenates it. Injection at a different stage from the input. **Sanitize at the boundary - never trust the filename later.**
 
 ### Step 6: Filter bypasses
 

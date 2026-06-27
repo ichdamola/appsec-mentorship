@@ -3,7 +3,7 @@
 ## 🎯 What you'll learn
 
 - Find SSRF in any feature that fetches a URL from user input
-- Pivot SSRF into cloud metadata access (AWS IMDSv1, GCP metadata) — the catastrophic case
+- Pivot SSRF into cloud metadata access (AWS IMDSv1, GCP metadata) - the catastrophic case
 - Bypass naive URL filters (decimal/octal IPs, IPv6, redirects, DNS rebinding)
 - Detect blind SSRF using Burp Collaborator / OAST
 - Design a defense that survives the bypass arms race
@@ -25,7 +25,7 @@ SSRF is consistently in the OWASP Top 10 (currently A10) because it's the easies
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — SSRF labs
+### Lab 1: PortSwigger Academy - SSRF labs
 
 [7 SSRF labs](https://portswigger.net/web-security/ssrf). Recommended:
 
@@ -46,7 +46,7 @@ docker run -d -p 169.254.169.254:80:80 --name fake-metadata \
   ... lab image ...
 ```
 
-(In real cloud environments, the metadata service is at `169.254.169.254`. **Never probe this address against production AWS — that's testing internal infrastructure.**)
+(In real cloud environments, the metadata service is at `169.254.169.254`. **Never probe this address against production AWS - that's testing internal infrastructure.**)
 
 ## ✅ Your job
 
@@ -60,10 +60,10 @@ docker run -d -p 169.254.169.254:80:80 --name fake-metadata \
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — SSRF](https://portswigger.net/web-security/ssrf) | Best overview | 45 min |
+| [PortSwigger - SSRF](https://portswigger.net/web-security/ssrf) | Best overview | 45 min |
 | [Capital One breach post-mortem](https://krebsonsecurity.com/2019/08/capital-one-data-theft-impacts-106m-people/) | Real-world SSRF → metadata → S3 chain | 20 min |
-| [OWASP — SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html) | Defense reference | 20 min |
-| [AWS — Instance Metadata Service v2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html) | Why IMDSv2 fixes most SSRF-to-metadata attacks | 15 min |
+| [OWASP - SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html) | Defense reference | 20 min |
+| [AWS - Instance Metadata Service v2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html) | Why IMDSv2 fixes most SSRF-to-metadata attacks | 15 min |
 
 ## 💡 What you should already know
 

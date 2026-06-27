@@ -4,7 +4,7 @@
 
 - Find IDOR (Insecure Direct Object Reference) bugs in a real API
 - Distinguish horizontal from vertical privilege escalation
-- Exploit forced browsing — hidden admin URLs that aren't actually hidden
+- Exploit forced browsing - hidden admin URLs that aren't actually hidden
 - Recognize HTTP method override tricks
 - Understand why authorization must live in the backend, not the UI
 
@@ -17,7 +17,7 @@ By the end of this week you'll be able to:
 
 ## Why this week matters
 
-**Broken Access Control is the #1 entry in the OWASP Top 10 (2021).** It's the most common, highest-impact bug class in modern web apps — partly because frameworks make it easy to add features without remembering to add the authorization check. Every endpoint is a potential IDOR.
+**Broken Access Control is the #1 entry in the OWASP Top 10 (2021).** It's the most common, highest-impact bug class in modern web apps - partly because frameworks make it easy to add features without remembering to add the authorization check. Every endpoint is a potential IDOR.
 
 ## ⚠️ Scope reminder
 
@@ -25,7 +25,7 @@ By the end of this week you'll be able to:
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — access control labs
+### Lab 1: PortSwigger Academy - access control labs
 
 The Academy has [13 access control labs](https://portswigger.net/web-security/access-control). Recommended starters:
 
@@ -59,9 +59,9 @@ While doing the labs, every time you observe an ID in a URL or request body, **s
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — Access control vulnerabilities](https://portswigger.net/web-security/access-control) | Best overview + lab links | 45 min |
-| [OWASP — Top 10 A01:2021 Broken Access Control](https://owasp.org/Top10/A01_2021-Broken_Access_Control/) | The framing | 15 min |
-| [HackerOne — Top 10 access control reports](https://hackerone.com/hacktivity?querystring=idor) | Real-world disclosures | 30 min |
+| [PortSwigger - Access control vulnerabilities](https://portswigger.net/web-security/access-control) | Best overview + lab links | 45 min |
+| [OWASP - Top 10 A01:2021 Broken Access Control](https://owasp.org/Top10/A01_2021-Broken_Access_Control/) | The framing | 15 min |
+| [HackerOne - Top 10 access control reports](https://hackerone.com/hacktivity?querystring=idor) | Real-world disclosures | 30 min |
 
 ## 💡 What you should already know
 

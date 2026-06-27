@@ -6,7 +6,7 @@
 - Walk a Java `readObject` chain to RCE using **ysoserial**
 - Exploit Python `pickle` RCE with a 5-line payload
 - Spot PHP magic methods (`__wakeup`, `__destruct`) and chain object injection
-- Understand why JSON deserialization is *usually* safe — and the few cases where it isn't
+- Understand why JSON deserialization is *usually* safe - and the few cases where it isn't
 - Choose safe data formats and validators for new code
 
 By the end of this week you'll be able to:
@@ -18,7 +18,7 @@ By the end of this week you'll be able to:
 
 ## Why this matters
 
-This is the bug class behind several of the worst CVEs of the last decade — Apache Commons Collections (multiple), Spring4Shell (CVE-2022-22965), the Log4Shell-adjacent JNDI gadgets. It's also OWASP A08:2021 (Software and Data Integrity Failures).
+This is the bug class behind several of the worst CVEs of the last decade - Apache Commons Collections (multiple), Spring4Shell (CVE-2022-22965), the Log4Shell-adjacent JNDI gadgets. It's also OWASP A08:2021 (Software and Data Integrity Failures).
 
 ## ⚠️ Scope reminder
 
@@ -26,7 +26,7 @@ This is the bug class behind several of the worst CVEs of the last decade — Ap
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — Deserialization
+### Lab 1: PortSwigger Academy - Deserialization
 
 [9 deserialization labs](https://portswigger.net/web-security/deserialization). Recommended:
 
@@ -76,14 +76,14 @@ The 5-line RCE that's been a CTF staple for 10 years.
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — Insecure deserialization](https://portswigger.net/web-security/deserialization) | The taxonomy | 45 min |
-| [OWASP — Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html) | Defense by language | 30 min |
+| [PortSwigger - Insecure deserialization](https://portswigger.net/web-security/deserialization) | The taxonomy | 45 min |
+| [OWASP - Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html) | Defense by language | 30 min |
 | [ysoserial GitHub](https://github.com/frohoff/ysoserial) | Tool + the gadget chain catalog | 20 min |
-| [Sonar — Decade of Java deserialization vulns](https://www.sonarsource.com/blog/this-mockingbird-knows-some-tricks-2/) | Background | 20 min |
+| [Sonar - Decade of Java deserialization vulns](https://www.sonarsource.com/blog/this-mockingbird-knows-some-tricks-2/) | Background | 20 min |
 
 ## 💡 What you should already know
 
 - The difference between serialization (object → bytes) and parsing (bytes → object)
 - That JSON is a *data format* whereas language-native serialization (Java, pickle, PHP, .NET) carries *executable behavior*
 - The pattern of magic methods (constructors, destructors, `__init__`, `__wakeup`, etc.)
-- That this bug class is RCE 99% of the time — the highest-impact you'll encounter
+- That this bug class is RCE 99% of the time - the highest-impact you'll encounter

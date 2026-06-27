@@ -4,10 +4,10 @@
 
 - Identify SQLi candidates in any input field by reading the response
 - Exploit UNION-based, error-based, blind boolean, and time-based SQLi
-- Use sqlmap effectively in a lab — and know when *not* to use it
+- Use sqlmap effectively in a lab - and know when *not* to use it
 - Bypass simple WAF and input filters
 - Recognize second-order SQLi (stored payload, executed later in a different query)
-- Understand why parameterized queries are the *only* real defense — and why ORMs don't always save you
+- Understand why parameterized queries are the *only* real defense - and why ORMs don't always save you
 
 By the end of this week you'll be able to:
 
@@ -18,19 +18,19 @@ By the end of this week you'll be able to:
 
 ## ⚠️ Scope reminder
 
-**All labs run locally or on PortSwigger Academy.** Never run SQLi (especially sqlmap) against systems you don't own — it leaves database-level fingerprints and can corrupt data. See [root readme](../readme.md#️-ethics--scope).
+**All labs run locally or on PortSwigger Academy.** Never run SQLi (especially sqlmap) against systems you don't own - it leaves database-level fingerprints and can corrupt data. See [root readme](../readme.md#️-ethics--scope).
 
 ## 🧰 Lab setup
 
-### Lab 1: PortSwigger Academy — SQL injection labs
+### Lab 1: PortSwigger Academy - SQL injection labs
 
 The Academy has [18 SQLi labs](https://portswigger.net/web-security/sql-injection). Recommended path:
 
-1. ["SQL injection vulnerability in WHERE clause allowing retrieval of hidden data"](https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data) — gentle start
+1. ["SQL injection vulnerability in WHERE clause allowing retrieval of hidden data"](https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data) - gentle start
 2. ["SQL injection UNION attack, retrieving data from other tables"](https://portswigger.net/web-security/sql-injection/union-attacks/lab-retrieve-data-from-other-tables)
 3. ["Blind SQL injection with conditional responses"](https://portswigger.net/web-security/sql-injection/blind/lab-conditional-responses)
 4. ["Blind SQL injection with time delays and information retrieval"](https://portswigger.net/web-security/sql-injection/blind/lab-time-delays-info-retrieval)
-5. ["SQL injection with filter bypass via XML encoding"](https://portswigger.net/web-security/sql-injection/lab-sql-injection-with-filter-bypass-via-xml-encoding) — bypass practice
+5. ["SQL injection with filter bypass via XML encoding"](https://portswigger.net/web-security/sql-injection/lab-sql-injection-with-filter-bypass-via-xml-encoding) - bypass practice
 
 ### Lab 2: DVWA (Docker)
 
@@ -38,7 +38,7 @@ The Academy has [18 SQLi labs](https://portswigger.net/web-security/sql-injectio
 docker run -d -p 80:80 vulnerables/web-dvwa
 ```
 
-Visit `http://localhost`. Login `admin/password`. Set DIFFICULTY to "low", then progress to "medium" and "high" — each level introduces a real-world filter you have to bypass.
+Visit `http://localhost`. Login `admin/password`. Set DIFFICULTY to "low", then progress to "medium" and "high" - each level introduces a real-world filter you have to bypass.
 
 ### Lab 3: sqlmap (in lab only)
 
@@ -48,7 +48,7 @@ pip install sqlmap
 sqlmap --version
 ```
 
-We'll use it to *confirm* findings from manual exploitation — not as a primary tool. Manual first; sqlmap to verify and to enumerate at scale.
+We'll use it to *confirm* findings from manual exploitation - not as a primary tool. Manual first; sqlmap to verify and to enumerate at scale.
 
 ## ✅ Your job
 
@@ -62,8 +62,8 @@ We'll use it to *confirm* findings from manual exploitation — not as a primary
 
 | Resource | Why | Time |
 |---|---|---|
-| [PortSwigger — SQL injection](https://portswigger.net/web-security/sql-injection) | Best overview of all variants | 60 min |
-| [OWASP — SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) | The defense reference | 30 min |
+| [PortSwigger - SQL injection](https://portswigger.net/web-security/sql-injection) | Best overview of all variants | 60 min |
+| [OWASP - SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) | The defense reference | 30 min |
 | [Bobby Tables](https://bobby-tables.com/) | Quick examples of parameterized queries in 20+ languages | 20 min |
 
 ## 💡 What you should already know

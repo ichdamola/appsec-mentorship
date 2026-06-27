@@ -1,4 +1,4 @@
-# Attack tree — `<goal>`
+# Attack tree - `<goal>`
 
 > STRIDE gives breadth across the DFD. Attack trees give depth on a single high-value goal.
 > Build one tree per goal that, if achieved, would be a Bad Day.
@@ -19,7 +19,7 @@ If a goal would not show up in a postmortem, it does not need a tree.
 - Leaves = concrete techniques you can name with a CVE class or curriculum week.
 - For each leaf: note your defense, and whether it's `Mitigated`, `Action`, or `Accepted`.
 
-## Example (Mentorbase — fill yours in below)
+## Example (Mentorbase - fill yours in below)
 
 ```
 GOAL: Attacker controls a paid mentor's account
@@ -97,5 +97,5 @@ You're done with the tree when **every path bottoms out at either a mitigation i
 
 ## Cross-reference
 
-- Threats you find here that aren't in the [STRIDE worksheet](stride-worksheet.md) — add them.
-- Mitigations you list here that aren't tracked anywhere — write them into the [threat-model-report.md](threat-model-report.md) under top-N mitigations.
+- Threats you find here that aren't in the [STRIDE worksheet](stride-worksheet.md) - add them.
+- Mitigations you list here that aren't tracked anywhere - write them into the [threat-model-report.md](threat-model-report.md) under top-N mitigations.

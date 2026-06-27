@@ -1,4 +1,4 @@
-# Week 12: Defense — XXE, File Upload, Path Traversal
+# Week 12: Defense - XXE, File Upload, Path Traversal
 
 Three related bug classes, three related defenses.
 
@@ -10,7 +10,7 @@ Three related bug classes, three related defenses.
 > **Uploads:** validate by **content**, not by **name**. Process in a sandbox. Store with a randomized name in a non-executable location.
 > **Path traversal:** never concatenate user input into filesystem paths. Resolve, then verify the result is inside the intended directory.
 
-## XXE — disable external entities
+## XXE - disable external entities
 
 ### Python (lxml / xml.etree)
 
@@ -47,7 +47,7 @@ The OWASP cheat sheet has identical lines for SAXParserFactory, XMLInputFactory,
 ### Node.js (fast-xml-parser, sax-js)
 
 ```javascript
-// fast-xml-parser — secure by default
+// fast-xml-parser - secure by default
 const parser = new XMLParser({
     ignoreAttributes: false,
     processEntities: false,  // don't process &custom;
@@ -79,7 +79,7 @@ def test_xml_parser_rejects_external_entities():
     assert "root:" not in response.text     # /etc/passwd contents not in response
 ```
 
-## Uploads — defense in layers
+## Uploads - defense in layers
 
 ### Layer 1: Validate by content, not name
 
@@ -103,7 +103,7 @@ def safe_upload(file):
         ...
 ```
 
-The libmagic check looks at actual file content, not the client's claim. The PIL re-encode strips polyglot payloads — the output is a clean image regardless of what the input was.
+The libmagic check looks at actual file content, not the client's claim. The PIL re-encode strips polyglot payloads - the output is a clean image regardless of what the input was.
 
 ### Layer 2: Randomize storage names
 
@@ -142,7 +142,7 @@ def serve_file(key):
 
     # RFC 6266 filename* encoding for the user-uploaded original name.
     # urllib.parse.quote with safe="" escapes everything non-ASCII and any
-    # CR/LF — the latter is what blocks header injection if the stored
+    # CR/LF - the latter is what blocks header injection if the stored
     # filename contains a literal \r\n.
     import urllib.parse
     safe_name = urllib.parse.quote(file_record.original_name, safe="")
@@ -191,9 +191,9 @@ For uploads that users will download (file-sharing features, marketplaces):
 
 - ClamAV (open-source baseline)
 - Commercial scanners (BinaryFox, VirusTotal API, MetaDefender)
-- Async — scan after upload, mark "pending" until clean
+- Async - scan after upload, mark "pending" until clean
 
-## Path traversal — resolve and verify
+## Path traversal - resolve and verify
 
 ### The pattern
 
@@ -224,7 +224,7 @@ The user references files by ID, never by path. The application maps ID → stor
 
 This is the right architecture for any new feature. Path-based access exists in legacy code; new features should avoid it.
 
-### Zip slip — safe archive extraction
+### Zip slip - safe archive extraction
 
 ```python
 import os
@@ -234,7 +234,7 @@ from zipfile import ZipFile
 def safe_extract(zip_path, target_dir):
     """Extract one entry at a time, re-validating after each write, refusing
     symlink entries. The naive 'validate namelist then extractall' pattern is
-    broken — it doesn't account for symlink entries (zip carries Unix mode
+    broken - it doesn't account for symlink entries (zip carries Unix mode
     bits and Python's zipfile extracts them as symlinks) or for TOCTOU between
     validation and extraction."""
     target_dir = os.path.realpath(target_dir)
@@ -262,7 +262,7 @@ Same idea: pre-validate every entry. Don't trust the archive's metadata.
 
 > ⚠️ **Tarfiles**: Python 3.12+ ships `tarfile.extractall(..., filter='data')` which implements this hardening for you (CVE-2007-4559 hung around for 15 years before the stdlib fix). On 3.12+ use the filter; on older, use a vetted library. Don't reinvent.
 
-Most archive libraries now have a `safe_extractall` variant — check yours.
+Most archive libraries now have a `safe_extractall` variant - check yours.
 
 ## Defense in depth
 
@@ -422,10 +422,10 @@ def test_zip_extraction_rejects_traversal(client, alice_token):
 
 ## Going further
 
-- [PortSwigger — XXE](https://portswigger.net/web-security/xxe)
-- [PortSwigger — File upload vulnerabilities](https://portswigger.net/web-security/file-upload)
-- [PortSwigger — Path traversal](https://portswigger.net/web-security/file-path-traversal)
-- [OWASP — File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
-- [OWASP — XXE Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html)
-- [Snyk — Zip Slip vulnerability](https://snyk.io/research/zip-slip-vulnerability)
-- [ImageMagick — Security Policy](https://imagemagick.org/script/security-policy.php)
+- [PortSwigger - XXE](https://portswigger.net/web-security/xxe)
+- [PortSwigger - File upload vulnerabilities](https://portswigger.net/web-security/file-upload)
+- [PortSwigger - Path traversal](https://portswigger.net/web-security/file-path-traversal)
+- [OWASP - File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
+- [OWASP - XXE Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html)
+- [Snyk - Zip Slip vulnerability](https://snyk.io/research/zip-slip-vulnerability)
+- [ImageMagick - Security Policy](https://imagemagick.org/script/security-policy.php)

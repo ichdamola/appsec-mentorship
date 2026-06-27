@@ -1,4 +1,4 @@
-# Week 13: Defense — API Security
+# Week 13: Defense - API Security
 
 You exploited BOLA, BOPLA, mass assignment, missing rate limits, and a handful of GraphQL-specific bugs in [attack.md](attack.md). The defenses cluster around two principles: **never trust an ID from the client as authorization**, and **declare your schema explicitly**.
 
@@ -8,14 +8,14 @@ You exploited BOLA, BOPLA, mass assignment, missing rate limits, and a handful o
 
 > **Every request that names a resource must compare the resource's owner to `request.user`, server-side, on every endpoint.**
 
-If your framework lets you forget this — Flask routes, Express handlers — it's your responsibility to add it. If your framework forces it — Django REST Framework permission classes, Rails Pundit/CanCanCan policies — use it consistently.
+If your framework lets you forget this - Flask routes, Express handlers - it's your responsibility to add it. If your framework forces it - Django REST Framework permission classes, Rails Pundit/CanCanCan policies - use it consistently.
 
 ## Defense 1: Centralize object-level authorization
 
 The wrong pattern is per-endpoint:
 
 ```python
-# wrong — easy to forget on any one endpoint
+# wrong - easy to forget on any one endpoint
 @app.route("/api/orders/<id>")
 def get_order(id):
     order = Order.query.get(id)
@@ -40,10 +40,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 Now BOLA is impossible by construction in `OrderViewSet`: the query layer filters before the URL parameter is ever used. Any `pk` not in `request.user`'s orders returns 404.
 
-> 💡 This is the API-scale version of Week 03's "filter at the query layer" pattern. The DRF `get_queryset` override is just how Django REST Framework expresses **`Order.objects.filter(owner=request.user)`** at the ViewSet layer — same idea, different framework idiom. The principle ("scope by ownership before the URL parameter touches anything") is identical across stacks.
+> 💡 This is the API-scale version of Week 03's "filter at the query layer" pattern. The DRF `get_queryset` override is just how Django REST Framework expresses **`Order.objects.filter(owner=request.user)`** at the ViewSet layer - same idea, different framework idiom. The principle ("scope by ownership before the URL parameter touches anything") is identical across stacks.
 
 Equivalent patterns:
-- **Rails:** Pundit policies — `Order.policy_scope(user)` returns the filtered queryset.
+- **Rails:** Pundit policies - `Order.policy_scope(user)` returns the filtered queryset.
 - **Spring:** `@PreAuthorize("@orderService.isOwner(authentication, #id)")`.
 - **Node/Express:** middleware that wraps every `/:id` route with an ownership check that uses route-defined `resource` metadata.
 
@@ -59,7 +59,7 @@ return jsonify(user.to_dict())   # whatever fields the model has
 The right pattern is explicit:
 
 ```python
-# DRF serializer — only these fields go out
+# DRF serializer - only these fields go out
 class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -77,29 +77,29 @@ class UserResponse(BaseModel):
 def get_user(id: int): ...
 ```
 
-The schema is in code, version-controlled, and reviewable. Adding a sensitive field to `User` doesn't accidentally expose it in `/api/users/<id>` — it has to be added to the response schema too.
+The schema is in code, version-controlled, and reviewable. Adding a sensitive field to `User` doesn't accidentally expose it in `/api/users/<id>` - it has to be added to the response schema too.
 
 ## Defense 3: Define your write schema explicitly (stop mass assignment)
 
 Same pattern, write-side:
 
 ```python
-# Rails — strong_parameters
+# Rails - strong_parameters
 def user_params
   params.require(:user).permit(:name, :email)   # is_admin not allowed
 end
 
-# Django — explicit fields in form/serializer
+# Django - explicit fields in form/serializer
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["name", "email"]   # NOT "__all__"
 
-# Spring — explicit DTO, never bind directly to entity
+# Spring - explicit DTO, never bind directly to entity
 public class UpdateUserDTO {
     private String name;
     private String email;
-    // no is_admin field — can't be mass-assigned
+    // no is_admin field - can't be mass-assigned
 }
 
 # Express + Zod
@@ -120,7 +120,7 @@ Rate limiting has at least four dimensions. Apply all that fit each endpoint:
 | Per-IP | nginx `limit_req`, Cloudflare rules, Envoy local rate limit |
 | Per-account | Application-layer (`flask-limiter` with `key_func=lambda: g.user.id`) |
 | Per-endpoint | Tighter limits on `/login`, `/password-reset`, `/api/coupon` |
-| Per-API-key | For partner integrations — kill switch + analytics |
+| Per-API-key | For partner integrations - kill switch + analytics |
 | Per-resource | "User X can only fetch their own data 100x/min" |
 
 For the OTP / password-reset / login class specifically:
@@ -154,7 +154,7 @@ const server = new ApolloServer({
 ### Disable field suggestions
 
 ```javascript
-// graphql-js — set didYouMean: false in custom error formatter
+// graphql-js - set didYouMean: false in custom error formatter
 formatError: (err) => {
   if (err.message.includes('Did you mean')) {
     return new GraphQLError('Cannot query field');  // strip the hint
@@ -172,7 +172,7 @@ const server = new ApolloServer({ validationRules: [depthLimit(5)] });
 
 ### Cost analysis
 
-Better than depth limit alone — assign costs to fields, reject queries above a threshold:
+Better than depth limit alone - assign costs to fields, reject queries above a threshold:
 
 ```javascript
 import costAnalysis from 'graphql-cost-analysis';
@@ -210,14 +210,14 @@ Or use a framework like Nexus / type-graphql that puts the auth annotation next 
 
 | ID type | BOLA-friendly? | Notes |
 |---|---|---|
-| Sequential integers (1, 2, 3) | Worst — enumeration trivial | Switch unless internal-only |
-| `uuid1` | Bad — leaks MAC + time | Don't use |
-| `uuid4` | OK — but doesn't replace auth | The CSPRNG variant |
-| ULID / KSUID | Good — sortable, opaque, secure | Better DX than uuid4 |
-| Hashids (encoded ints) | False sense of security | Reversible — still need authz |
+| Sequential integers (1, 2, 3) | Worst - enumeration trivial | Switch unless internal-only |
+| `uuid1` | Bad - leaks MAC + time | Don't use |
+| `uuid4` | OK - but doesn't replace auth | The CSPRNG variant |
+| ULID / KSUID | Good - sortable, opaque, secure | Better DX than uuid4 |
+| Hashids (encoded ints) | False sense of security | Reversible - still need authz |
 | Stripe-style prefixed IDs (`cus_abc...`) | Same as uuid4 + readability | Recommended |
 
-**ID randomness reduces enumeration but does not replace authorization.** A BOLA with UUIDs is still a BOLA — it just takes one leak (a referrer header, a public profile URL) to bridge.
+**ID randomness reduces enumeration but does not replace authorization.** A BOLA with UUIDs is still a BOLA - it just takes one leak (a referrer header, a public profile URL) to bridge.
 
 ## Defense in depth
 
@@ -325,7 +325,7 @@ def test_login_rate_limited(client):
     # Test the THRESHOLD, not "eventually 429s". With limit=5/minute,
     # attempts 1-5 should 401 (bad password) and attempt 6 should 429.
     # A test that just checks "429 in statuses" passes whether the limit
-    # is 5, 8, or 10 — it doesn't verify the configured policy.
+    # is 5, 8, or 10 - it doesn't verify the configured policy.
     for _ in range(5):
         r = client.post("/login", json={"email": "x@x.com", "password": "wrong"})
         assert r.status_code == 401, "rate limit hit too early"
@@ -370,9 +370,9 @@ def test_graphql_depth_limit(client, user_token):
 ## Going further
 
 - [OWASP API Security Top 10 (2023)](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)
-- [Inon Shkedy — A deep dive on BOLA](https://inonst.medium.com/a-deep-dive-on-the-most-critical-api-vulnerability-bola-1342224ec3f2)
-- [Akto — APIsec University](https://www.akto.io/academy)
-- [Apollo — Securing your GraphQL API](https://www.apollographql.com/docs/router/configuration/authn-jwt/)
+- [Inon Shkedy - A deep dive on BOLA](https://inonst.medium.com/a-deep-dive-on-the-most-critical-api-vulnerability-bola-1342224ec3f2)
+- [Akto - APIsec University](https://www.akto.io/academy)
+- [Apollo - Securing your GraphQL API](https://www.apollographql.com/docs/router/configuration/authn-jwt/)
 - [graphql-armor](https://github.com/Escape-Technologies/graphql-armor)
-- [PortSwigger — GraphQL API vulnerabilities](https://portswigger.net/web-security/graphql)
+- [PortSwigger - GraphQL API vulnerabilities](https://portswigger.net/web-security/graphql)
 - [crAPI scenarios](https://github.com/OWASP/crAPI/blob/main/docs/scenarios.md)
